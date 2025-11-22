@@ -153,6 +153,9 @@ importers:
 
   ext:
     dependencies:
+      lucide-svelte:
+        specifier: ^0.553.0
+        version: 0.553.0(svelte@5.43.14)
       pocketbase:
         specifier: ^0.26.3
         version: 0.26.3

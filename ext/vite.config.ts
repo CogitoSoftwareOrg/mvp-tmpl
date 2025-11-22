@@ -9,9 +9,11 @@ import manifest from './manifest.ts';
 // https://vite.dev/config/
 export default defineConfig({
 	plugins: [tailwindcss(), svelte(), crx({ manifest })],
+	publicDir: path.resolve(__dirname, '../static'),
 	resolve: {
 		alias: {
-			$src: path.resolve(__dirname, '../src')
+			$src: path.resolve(__dirname, '../src'),
+			$lib: path.resolve(__dirname, '../src/lib')
 		}
 	},
 	build: {

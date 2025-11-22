@@ -18,7 +18,8 @@
 		"moduleDetection": "force",
 		"baseUrl": ".",
 		"paths": {
-			"$src/*": ["../src/*"]
+			"$src/*": ["../src/*"],
+			"$lib/*": ["../src/lib/*"]
 		}
 	},
 	"include": ["src/**/*.ts", "src/**/*.js", "src/**/*.svelte"]

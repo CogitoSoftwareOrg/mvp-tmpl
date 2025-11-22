@@ -13,13 +13,15 @@
 		Heart,
 		Book,
 		MessageSquare,
-		Play
+		Play,
+		TextAlignJustify
 	} from 'lucide-svelte';
 
-	import { chatsStore } from '$lib/apps/chat/client';
+	import { chatApi, chatsStore } from '$lib/apps/chat/client';
 	import { uiStore } from '$lib/shared/ui/ui.svelte';
 	import { userStore, subStore, FeedbackForm } from '$lib/apps/user/client';
 	import { Button, Modal, ThemeController, AuthWall, Paywall } from '$lib/shared/ui';
+	import { ChatsStatusOptions } from '$lib';
 
 	import Splash from './Splash.svelte';
 
@@ -30,12 +32,7 @@
 	const sub = $derived(subStore.sub);
 	const sidebarOpen = $derived(uiStore.globalSidebarOpen);
 
-	const navItems = [
-		{ path: '/app/chat', icon: Play, label: 'Chat' },
-		{ path: '/app/stories', icon: Book, label: 'Stories' }
-	];
-
-	const chatSettings = $derived(uiStore.chatSettings);
+	const chats = $derived(chatsStore.chats);
 
 	$effect(() => {
 		globalPromise.then(({ user, sub, chats }) => {
@@ -66,6 +63,24 @@
 	function isActive(path: string) {
 		return page.url.pathname === path;
 	}
+
+	let loading = $state(false);
+	async function handleNewChat() {
+		if (!user) return uiStore.setAuthWallOpen(true);
+		let emptyChat = chatsStore.getEmpty();
+
+		if (!emptyChat) {
+			loading = true;
+			emptyChat = await chatApi.create({
+				title: 'New Chat',
+				status: ChatsStatusOptions.empty,
+				user: user.id
+			});
+			loading = false;
+		}
+
+		goto(`/app/chats/${emptyChat.id}`);
+	}
 </script>
 
 {#await globalPromise}
@@ -89,7 +104,7 @@
 				]}
 			>
 				{#if sidebarOpen}
-					<a href="/app/stories" class="flex items-center gap-2">
+					<a href="/app" class="flex items-center gap-2">
 						<div class="text-2xl font-bold text-primary"><Heart class="size-8 text-primary" /></div>
 						<span class="text-lg font-semibold">YouStory</span>
 					</a>
@@ -110,41 +125,28 @@
 			<!-- Navigation -->
 			<nav class="flex-1 p-1" class:overflow-y-auto={sidebarOpen}>
 				<ul class="menu w-full gap-2">
-					{#if chatSettings}
+					<li>
+						<Button disabled={loading} circle={!sidebarOpen} onclick={handleNewChat}>
+							<Plus class="size-6" />
+							{#if sidebarOpen}
+								<span class="text-nowrap"> New Chat </span>
+							{/if}
+						</Button>
+					</li>
+					{#each chats as chat}
 						<li class="w-full">
 							<a
-								href={uiStore.chatUrl()}
+								href={`/app/chats/${chat.id}`}
 								class={[
 									'btn flex w-full items-center gap-2 rounded-full btn-ghost transition-all',
 									sidebarOpen ? 'btn-circle justify-start px-4' : 'justify-center',
-									uiStore.chatUrl() ? (isActive(uiStore.chatUrl()!) ? 'btn-soft' : '') : ''
+									isActive(`/app/chats/${chat.id}`) ? 'btn-soft' : ''
 								]}
-								title={!sidebarOpen ? 'Stories' : ''}
+								title={!sidebarOpen ? chat.title || chat.id : ''}
 							>
-								<Play class="block size-6 shrink-0" />
+								<MessageSquare class="block size-6 shrink-0" />
 								{#if sidebarOpen}
-									<span class="font-medium text-nowrap">Last Chat</span>
-								{/if}
-							</a>
-						</li>
-						<li class="separator"></li>
-					{/if}
-
-					{#each navItems as item}
-						{@const Icon = item.icon}
-						<li class="w-full">
-							<a
-								href={item.path}
-								class={[
-									'btn flex w-full items-center gap-2 rounded-full btn-ghost transition-all',
-									sidebarOpen ? 'btn-circle justify-start px-4' : 'justify-center',
-									isActive(item.path) ? 'btn-soft' : ''
-								]}
-								title={!sidebarOpen ? item.label : ''}
-							>
-								<Icon class="block size-6 shrink-0" />
-								{#if sidebarOpen}
-									<span class="font-medium text-nowrap">{item.label}</span>
+									<span class="font-medium text-nowrap">{chat.title || chat.id}</span>
 								{/if}
 							</a>
 						</li>
@@ -176,10 +178,10 @@
 			<div class="border-t border-base-300">
 				{#if user}
 					<a
-						href="/app/settings"
+						href="/app/profile"
 						class="flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-base-300"
 						class:justify-center={!sidebarOpen}
-						title={!sidebarOpen ? 'Settings' : ''}
+						title={!sidebarOpen ? 'Profile' : ''}
 					>
 						{#if userStore.avatarUrl}
 							<img
@@ -229,38 +231,29 @@
 		</main>
 
 		<footer class="mobile-dock-footer dock dock-sm z-50 sm:hidden">
-			<a href="/app/stories" data-sveltekit-preload-data="tap" class="dock-item">
-				<Book class={page.url.pathname === '/app' ? 'text-primary' : 'text-neutral'} />
+			<a href="/app/chats" data-sveltekit-preload-data="tap" class="dock-item">
+				<TextAlignJustify
+					class={page.url.pathname.startsWith('/app/chats') ? 'text-primary' : 'text-neutral'}
+				/>
 			</a>
+
 			<div>
-				<a
-					href={`/app/stories/${chatSettings?.storyId}/events/${chatSettings?.eventId}/chats/${chatSettings?.chatId}`}
-					class={[
-						'dock-item btn-solid btn btn-circle btn-primary',
-						isActive(
-							`/app/stories/${chatSettings?.storyId}/events/${chatSettings?.eventId}/chats/${chatSettings?.chatId}`
-						)
-							? 'btn-soft'
-							: ''
-					]}
-				>
-					<Play class="block size-6 shrink-0" />
-				</a>
+				<Button circle disabled={loading} class="dock-item" onclick={handleNewChat}>
+					<Plus class="size-6" />
+				</Button>
 			</div>
-			<div>
-				<a href="/app/stories/new" class="dock-item">
-					<Plus
-						size={32}
-						class={page.url.pathname === '/app/stories/new' ? 'text-primary' : 'text-neutral'}
-					/>
-				</a>
-			</div>
+
 			<a
-				href={user ? '/app/settings' : '/app/auth'}
+				href={user ? '/app/profile' : '/app/auth/sign-up'}
 				data-sveltekit-preload-data="tap"
 				class="dock-item"
 			>
-				<Settings class={page.url.pathname === '/app/settings' ? 'text-primary' : 'text-neutral'} />
+				<Settings
+					class={page.url.pathname.startsWith('/app/profile') ||
+					page.url.pathname.startsWith('/app/auth')
+						? 'text-primary'
+						: 'text-neutral'}
+				/>
 			</a>
 		</footer>
 	</div>

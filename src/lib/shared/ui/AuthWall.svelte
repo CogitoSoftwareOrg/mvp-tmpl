@@ -6,7 +6,7 @@
 
 	function handleSignUp() {
 		uiStore.setAuthWallOpen(false);
-		goto('/app/auth');
+		goto('/app/auth/sign-up');
 	}
 </script>
 
@@ -23,6 +23,8 @@
 	</div>
 
 	<div class="flex w-full flex-col gap-2 sm:flex-row">
-		<Button variant="primary" class="w-full" onclick={handleSignUp}>Sign Up / Log In</Button>
+		<Button variant="solid" color="primary" class="w-full" onclick={handleSignUp}
+			>Sign Up / Log In</Button
+		>
 	</div>
 </div>

@@ -1,3 +1,3 @@
-export * from './MessageControls.svelte';
-export * from './Messages.svelte';
-export * from './Message.svelte';
+export { default as MessageControls } from './MessageControls.svelte';
+export { default as Messages } from './Messages.svelte';
+export { default as Message } from './Message.svelte';

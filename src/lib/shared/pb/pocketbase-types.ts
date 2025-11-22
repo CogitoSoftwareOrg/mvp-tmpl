@@ -97,11 +97,17 @@ export type SuperusersRecord = {
 	verified?: boolean
 }
 
+export enum ChatsStatusOptions {
+	"empty" = "empty",
+	"going" = "going",
+}
 export type ChatsRecord = {
 	created: IsoAutoDateString
 	id: string
+	status: ChatsStatusOptions
+	title?: string
 	updated: IsoAutoDateString
-	user?: RecordIdString
+	user: RecordIdString
 }
 
 export enum EventsTypeOptions {
@@ -110,10 +116,10 @@ export enum EventsTypeOptions {
 export type EventsRecord<Tmetadata = unknown> = {
 	created: IsoAutoDateString
 	id: string
-	key?: string
+	key: string
 	metadata?: null | Tmetadata
 	name?: string
-	type?: EventsTypeOptions
+	type: EventsTypeOptions
 	updated: IsoAutoDateString
 }
 
@@ -122,12 +128,12 @@ export enum FeedbacksTypeOptions {
 	"feature" = "feature",
 }
 export type FeedbacksRecord = {
-	content?: string
+	content: string
 	created: IsoAutoDateString
 	id: string
-	type?: FeedbacksTypeOptions
+	type: FeedbacksTypeOptions
 	updated: IsoAutoDateString
-	user?: RecordIdString
+	user: RecordIdString
 }
 
 export enum MessagesRoleOptions {
@@ -141,13 +147,13 @@ export enum MessagesStatusOptions {
 	"optimistic" = "optimistic",
 }
 export type MessagesRecord<Tmetadata = unknown> = {
-	chat?: RecordIdString
+	chat: RecordIdString
 	content?: string
 	created: IsoAutoDateString
 	id: string
 	metadata?: null | Tmetadata
-	role?: MessagesRoleOptions
-	status?: MessagesStatusOptions
+	role: MessagesRoleOptions
+	status: MessagesStatusOptions
 	updated: IsoAutoDateString
 }
 

@@ -3,15 +3,6 @@ import type { MessageChunk } from '$lib/apps/chat/core';
 
 import { messagesStore } from './messages.svelte.ts';
 
-type SendMessageDto = {
-	type: 'character' | 'story';
-	characterId?: string;
-	storyId?: string;
-	eventId?: string;
-	content: string;
-	msg: Create<Collections.Messages>;
-};
-
 class ChatApi {
 	// Create new chat
 	async create(dto: Create<Collections.Chats>) {
@@ -25,17 +16,12 @@ class ChatApi {
 		return chat;
 	}
 
-	async sendMessage(dto: SendMessageDto) {
+	async sendMessage(dto: Create<Collections.Messages>) {
 		if (!dto.content) throw new Error('Content is required');
 
-		messagesStore.addOptimisticMessage(dto.msg);
+		messagesStore.addOptimisticMessage(dto);
 
-		const url =
-			dto.type === 'story'
-				? `/api/stories/${dto.storyId}/events/${dto.eventId}/chats/${dto.msg.chat}/sse?q=${encodeURIComponent(dto.content)}`
-				: `/api/characters/${dto.characterId}/chats/${dto.msg.chat}/sse?q=${encodeURIComponent(dto.content)}`;
-
-		const es = new EventSource(url, {
+		const es = new EventSource(`/api/chats/${dto.chat}/sse?q=${encodeURIComponent(dto.content)}`, {
 			withCredentials: true
 		});
 

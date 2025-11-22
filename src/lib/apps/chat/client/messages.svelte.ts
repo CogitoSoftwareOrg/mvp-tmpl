@@ -1,4 +1,4 @@
-import { Collections, pb, type Create, type MessagesResponse } from '$lib';
+import { Collections, MessagesStatusOptions, pb, type Create, type MessagesResponse } from '$lib';
 import type { MessageChunk } from '$lib/apps/chat/core';
 
 class MessagesStore {
@@ -33,7 +33,7 @@ class MessagesStore {
 		const message = {
 			id: `temp-${Date.now()}`,
 			...dto,
-			status: 'optimistic' as MessagesResponse['status']
+			status: MessagesStatusOptions.optimistic
 		} as MessagesResponse;
 		this._messages.push(message);
 	}

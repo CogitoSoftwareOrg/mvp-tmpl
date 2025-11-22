@@ -10,6 +10,4 @@ onRecordCreate((e) => {
 	e.record.set('pointsLimit', 100);
 
 	e.next();
-
-	$app.runInTransaction((txApp) => {});
 }, 'subs');

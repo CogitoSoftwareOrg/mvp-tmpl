@@ -1,4 +1,4 @@
-import { Collections, pb, type ChatsResponse } from '$lib';
+import { ChatsStatusOptions, Collections, pb, type ChatsResponse } from '$lib';
 
 class ChatsStore {
 	_chats: ChatsResponse[] = $state([]);
@@ -7,6 +7,10 @@ class ChatsStore {
 
 	set(chats: ChatsResponse[]) {
 		this._chats = chats;
+	}
+
+	getEmpty() {
+		return this._chats.find((chat) => chat.status === ChatsStatusOptions.empty);
 	}
 
 	async subscribe(userId: string) {

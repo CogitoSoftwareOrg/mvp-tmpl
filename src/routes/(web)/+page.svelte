@@ -11,7 +11,7 @@
 </script>
 
 <div
-	class="min-h-screen bg-base-100 overflow-x-hidden selection:bg-primary selection:text-primary-content"
+	class="h-full bg-base-100 overflow-x-hidden selection:bg-primary selection:text-primary-content"
 >
 	<!-- Hero Section -->
 	<section class="relative min-h-[90vh] flex items-center justify-center overflow-hidden">

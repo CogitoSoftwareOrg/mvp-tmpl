@@ -35,10 +35,10 @@ class MessagesStore {
 			...dto,
 			status: MessagesStatusOptions.optimistic
 		} as MessagesResponse;
-		this._messages.push(message);
+		this._messages = [...this._messages, message];
 	}
 
-	subscribe(eventChatId: string) {
+	subscribe(chatId: string) {
 		return pb.collection(Collections.Messages).subscribe(
 			'*',
 			(e) => {
@@ -60,7 +60,7 @@ class MessagesStore {
 				}
 			},
 			{
-				filter: `chat = "${eventChatId}"`
+				filter: `chat = "${chatId}"`
 			}
 		);
 	}

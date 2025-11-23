@@ -23,6 +23,7 @@
 
 	let lastLength = 0;
 	$effect(() => {
+		if (lastLength === messages.length) return;
 		setTimeout(() => scrollToBottom(messagesContainer), 100);
 		lastLength = messages.length;
 	});

@@ -126,25 +126,33 @@
 			<nav class="flex-1 p-1" class:overflow-y-auto={sidebarOpen}>
 				<ul class="menu w-full gap-2">
 					<li>
-						<Button disabled={loading} circle={!sidebarOpen} onclick={handleNewChat}>
+						<Button
+							class="rounded-xl"
+							disabled={loading}
+							square={!sidebarOpen}
+							onclick={handleNewChat}
+						>
 							<Plus class="size-6" />
 							{#if sidebarOpen}
 								<span class="text-nowrap"> New Chat </span>
 							{/if}
 						</Button>
 					</li>
+
+					<li class="separator"></li>
+
 					{#each chats as chat}
 						<li class="w-full">
 							<a
 								href={`/app/chats/${chat.id}`}
 								class={[
-									'btn flex w-full items-center gap-2 rounded-full btn-ghost transition-all',
+									'btn flex w-full items-center gap-2 rounded-xl btn-ghost transition-all',
 									sidebarOpen ? 'btn-circle justify-start px-4' : 'justify-center',
 									isActive(`/app/chats/${chat.id}`) ? 'btn-soft' : ''
 								]}
 								title={!sidebarOpen ? chat.title || chat.id : ''}
 							>
-								<MessageSquare class="block size-6 shrink-0" />
+								{chat.id.slice(0, 2)}.
 								{#if sidebarOpen}
 									<span class="font-medium text-nowrap">{chat.title || chat.id}</span>
 								{/if}
@@ -178,10 +186,10 @@
 			<div class="border-t border-base-300">
 				{#if user}
 					<a
-						href="/app/profile"
-						class="flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-base-300"
+						href="/app/settings"
+						class="flex items-center gap-3 p-2 transition-colors hover:bg-base-200"
 						class:justify-center={!sidebarOpen}
-						title={!sidebarOpen ? 'Profile' : ''}
+						title={!sidebarOpen ? 'Settings' : ''}
 					>
 						{#if userStore.avatarUrl}
 							<img
@@ -224,7 +232,7 @@
 		</aside>
 
 		<!-- Main Content -->
-		<main class="flex-1 overflow-auto">
+		<main class="flex-1 pb-14 sm:pb-0">
 			<div class="mx-auto h-full max-w-7xl p-0 md:px-4 lg:px-6">
 				{@render children()}
 			</div>
@@ -233,7 +241,7 @@
 		<footer class="mobile-dock-footer dock dock-sm z-50 sm:hidden">
 			<a href="/app/chats" data-sveltekit-preload-data="tap" class="dock-item">
 				<TextAlignJustify
-					class={page.url.pathname.startsWith('/app/chats') ? 'text-primary' : 'text-neutral'}
+					class={page.url.pathname === '/app/chats' ? 'text-primary' : 'text-neutral'}
 				/>
 			</a>
 
@@ -244,12 +252,12 @@
 			</div>
 
 			<a
-				href={user ? '/app/profile' : '/app/auth/sign-up'}
+				href={user ? '/app/settings' : '/app/auth/sign-up'}
 				data-sveltekit-preload-data="tap"
 				class="dock-item"
 			>
 				<Settings
-					class={page.url.pathname.startsWith('/app/profile') ||
+					class={page.url.pathname.startsWith('/app/settings') ||
 					page.url.pathname.startsWith('/app/auth')
 						? 'text-primary'
 						: 'text-neutral'}

@@ -44,13 +44,19 @@
 	<!-- Avatar -->
 	<div class="flex shrink-0 flex-col items-center gap-1">
 		{#if showHeader}
-			<div class="avatar">
-				<div class="size-10 overflow-hidden rounded-full ring-1 ring-base-300 ring-offset-1">
-					<img alt={msg.role} src={sender.avatar} class="h-full w-full object-cover" />
+			{#if sender.avatar}
+				<div class="avatar">
+					<div class="size-10 overflow-hidden rounded-full ring-1 ring-base-300 ring-offset-1">
+						<img alt={msg.role} src={sender.avatar} class="h-full w-full object-cover" />
+					</div>
 				</div>
-			</div>
-		{:else}
-			<div class="size-10"></div>
+			{:else}
+				<div class="size-10 rounded-full bg-base-300 text-center flex items-center justify-center">
+					{sender.name?.at(0)?.toUpperCase() ?? 'U'}
+				</div>
+			{/if}
+			<!-- {:else}
+			<div class="size-10"></div> -->
 		{/if}
 	</div>
 
@@ -80,10 +86,17 @@
 				incoming
 					? 'rounded-tl-none bg-base-200 text-base-content'
 					: 'rounded-tr-none bg-primary text-primary-content',
+
+				// текущие стили:
 				'[&_p]:m-0 [&_p]:min-h-[1em]',
 				'[&_a]:underline [&_a]:decoration-current/30 [&_a]:underline-offset-2 hover:[&_a]:decoration-current',
-				'[&_code]:rounded-md [&_code]:bg-base-300/20 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-sm',
-				'[&_pre]:my-2 [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:bg-base-300/20 [&_pre]:p-3'
+				'[&_code]:rounded-md [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-sm',
+
+				// ВАЖНО: отдельная настройка для блочных код-блоков
+				// <pre> + <code> внутри
+				'[&_pre]:my-2 [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:p-3',
+				'[&_pre]:bg-base-300 [&_pre]:text-base-content', // нормальный контраст
+				'[&_pre_code]:bg-transparent [&_pre_code]:text-base-content'
 			]}
 		>
 			{#if isWaitingForResponse}

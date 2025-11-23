@@ -36,6 +36,11 @@ class ChatApi {
 		es.addEventListener('done', () => {
 			es.close();
 		});
+
+		es.onerror = (e) => {
+			console.error(e);
+			es.close();
+		};
 	}
 }
 

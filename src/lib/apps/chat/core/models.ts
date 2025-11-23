@@ -13,6 +13,10 @@ export type MessageChunk = {
 	i?: number;
 };
 
+export type OpenAIMessage = {
+	role: 'user' | 'assistant';
+	content: string;
+};
 export class Chat {
 	constructor(public readonly data: ChatsResponse<ChatExpand>) {}
 

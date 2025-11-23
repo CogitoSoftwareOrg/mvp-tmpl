@@ -30,7 +30,7 @@ const handleUserAuth: Handle = async ({ event, resolve }) => {
 		const principal = await event.locals.di.user.auth({ token });
 		event.locals.principal = principal;
 	} catch (error) {
-		console.error(error);
+		console.warn(error);
 	}
 	return resolve(event);
 };

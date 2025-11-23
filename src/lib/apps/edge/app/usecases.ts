@@ -3,6 +3,8 @@ import type { UserApp } from '$lib/apps/user/core';
 
 import type { EdgeApp, StreamChatCmd } from '../core';
 
+const DEFAULT_CHARGE_AMOUNT = 1;
+
 export class EdgeAppImpl implements EdgeApp {
 	constructor(
 		private readonly userApp: UserApp,
@@ -31,7 +33,7 @@ export class EdgeAppImpl implements EdgeApp {
 					controller.close();
 				} finally {
 					if (!charged) {
-						await userApp.charge({ subId: principal.sub.id, amount: 1 });
+						await userApp.charge({ subId: principal.sub.id, amount: DEFAULT_CHARGE_AMOUNT });
 						charged = true;
 					}
 				}

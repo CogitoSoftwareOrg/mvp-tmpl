@@ -70,10 +70,7 @@
 		try {
 			await onSend(content.trim());
 			content = '';
-			// Reset height after sending
-			if (textareaElement) {
-				textareaElement.style.height = `${MIN_HEIGHT}px`;
-			}
+			if (textareaElement) textareaElement.style.height = `${MIN_HEIGHT}px`;
 		} catch (error) {
 			console.error('Failed to send message:', error);
 		} finally {
@@ -90,14 +87,14 @@
 </script>
 
 <div class={['mx-auto w-full max-w-3xl', className]}>
-	<div class="flex items-end gap-2">
+	<div class={['flex items-end gap-2 border rounded-3xl pl-4', canSend ? 'border-primary' : '']}>
 		<textarea
 			bind:this={textareaElement}
 			bind:value={content}
 			onkeydown={handleKeydown}
 			oninput={handleInput}
 			placeholder="Type a message..."
-			class="textarea-bordered textarea w-full resize-none text-base textarea-primary focus:outline-none"
+			class="border-none textarea w-full resize-none text-base textarea-primary focus:outline-none"
 			style="min-height: {MIN_HEIGHT}px; max-height: {MAX_HEIGHT}px;"
 			rows="1"
 			disabled={disabled || isSending}
@@ -109,7 +106,7 @@
 			size="md"
 			color="primary"
 			disabled={disabled || !canSend}
-			class="mb-0.5 shrink-0"
+			class="shrink-0"
 		>
 			{#if isSending}
 				<span class="loading loading-sm loading-spinner"></span>
@@ -118,7 +115,7 @@
 			{/if}
 		</Button>
 	</div>
-	<div class="mt-2 text-center text-xs text-base-content/40">
+	<div class="mt-2 text-center text-xs text-base-content/40 hidden">
 		<p>AI can make mistakes. Treat everything it says as fiction.</p>
 	</div>
 </div>

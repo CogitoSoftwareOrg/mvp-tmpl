@@ -1,20 +1,12 @@
 import { z } from 'zod';
 import { browser } from '$app/environment';
 
-const ChatSettingsSchema = z.object({
-	mode: z.enum(['story', 'friend']).optional().nullable(),
-	storyId: z.string().optional().nullable(),
-	eventId: z.string().optional().nullable(),
-	chatId: z.string().optional().nullable(),
-	characterId: z.string().optional().nullable()
-});
-
 const UIStateSchema = z.object({
 	paywallOpen: z.boolean().default(false),
 	authWallOpen: z.boolean().default(false),
 	globalSidebarOpen: z.boolean().default(true),
 	feedbackModalOpen: z.boolean().default(false),
-	chatSettings: ChatSettingsSchema.optional().nullable().default(null)
+	emailVerifyWallOpen: z.boolean().default(false)
 });
 
 type UIState = z.infer<typeof UIStateSchema>;
@@ -24,31 +16,21 @@ class UIStore {
 		UIStateSchema.parse(JSON.parse(browser ? (localStorage.getItem('uiState') ?? '{}') : '{}'))
 	);
 
-	chatSettings = $derived(this._state?.chatSettings);
+	emailVerifyWallOpen = $derived(this._state?.emailVerifyWallOpen);
 	paywallOpen = $derived(this._state?.paywallOpen);
 	authWallOpen = $derived(this._state?.authWallOpen);
 	globalSidebarOpen = $derived(this._state?.globalSidebarOpen);
 	feedbackModalOpen = $derived(this._state?.feedbackModalOpen);
 
-	// chatSettings
-	setChatSettings(
-		storyId: string,
-		eventId: string,
-		chatId: string,
-		characterId: string,
-		mode: 'story' | 'friend'
-	) {
+	toggleEmailVerifyWallOpen() {
 		if (!this._state) return;
-		this._state.chatSettings = { storyId, eventId, chatId, characterId, mode };
+		this._state.emailVerifyWallOpen = !this._state.emailVerifyWallOpen;
 		this.saveState();
 	}
-	chatUrl() {
-		if (!this.chatSettings) return null;
-		if (this.chatSettings.mode === 'story') {
-			return `/app/stories/${this.chatSettings.storyId}/events/${this.chatSettings.eventId}/chats/${this.chatSettings.chatId}`;
-		} else {
-			return `/app/characters/${this.chatSettings.characterId}/chats/${this.chatSettings.chatId}`;
-		}
+	setEmailVerifyWallOpen(open: boolean) {
+		if (!this._state) return;
+		this._state.emailVerifyWallOpen = open;
+		this.saveState();
 	}
 
 	// paywallOpen

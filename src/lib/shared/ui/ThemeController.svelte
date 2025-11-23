@@ -32,7 +32,7 @@
 		class={[
 			'flex w-full cursor-pointer items-center transition-all',
 			navStyle
-				? 'btn btn-circle justify-start gap-2 rounded-full px-4 btn-ghost'
+				? 'btn justify-start gap-2 px-4 btn-ghost'
 				: 'gap-3 rounded-lg border border-base-300 px-2 py-1 transition-colors hover:bg-base-300'
 		]}
 	>
@@ -49,7 +49,7 @@
 			<Sun class={navStyle ? 'swap-off block size-6 shrink-0' : 'swap-off size-7'} />
 		{/if}
 
-		<span class={['font-medium text-nowrap', navStyle ? '' : 'text-sm text-base-content']}
+		<span class={['font-bold text-nowrap', navStyle ? '' : 'text-sm text-base-content']}
 			>{themeLabel}</span
 		>
 	</label>

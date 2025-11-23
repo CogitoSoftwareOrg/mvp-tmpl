@@ -26,7 +26,7 @@ class MessagesStore {
 			filter: `chat = "${chatId}"`,
 			sort: 'created'
 		});
-		this.messages = messages;
+		this._messages = messages;
 	}
 
 	addOptimisticMessage(dto: Create<Collections.Messages>) {
@@ -46,15 +46,15 @@ class MessagesStore {
 				switch (e.action) {
 					case 'create': {
 						this._messages = this._messages.filter((m) => !m.id.startsWith('temp-'));
-						this.messages.push(message);
+						this._messages = [...this._messages, message];
 						break;
 					}
 					case 'update': {
-						this.messages = this.messages?.map((m) => (m.id === message.id ? message : m)) || [];
+						this._messages = this._messages.map((m) => (m.id === message.id ? message : m));
 						break;
 					}
 					case 'delete': {
-						this.messages = this.messages?.filter((m) => m.id !== message.id) || [];
+						this._messages = this._messages.filter((m) => m.id !== message.id);
 						break;
 					}
 				}

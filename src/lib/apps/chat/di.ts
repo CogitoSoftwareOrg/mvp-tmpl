@@ -1,5 +1,7 @@
+import type { MemoryApp } from '$lib/apps/memory/core';
+
 import { ChatAppImpl } from './app';
 
-export const getChatApp = () => {
-	return new ChatAppImpl();
+export const getChatApp = (memoryApp: MemoryApp) => {
+	return new ChatAppImpl(memoryApp);
 };

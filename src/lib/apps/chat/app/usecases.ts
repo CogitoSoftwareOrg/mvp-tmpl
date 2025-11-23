@@ -1,3 +1,4 @@
+import type { MemoryApp } from '$lib/apps/memory/core';
 import {
 	Collections,
 	MessagesRoleOptions,
@@ -20,6 +21,8 @@ import {
 const HISTORY_TOKENS = 2000;
 
 export class ChatAppImpl implements ChatApp {
+	constructor(private readonly memoryApp: MemoryApp) {}
+
 	async run(cmd: SendUserMessageCmd): Promise<string> {
 		const { aiMsg, history } = await this.prepare(cmd);
 		const completion = await grok.chat.completions.create({

@@ -123,44 +123,49 @@
 			</div>
 
 			<!-- Navigation -->
-			<nav class="flex-1 p-1" class:overflow-y-auto={sidebarOpen}>
-				<ul class="menu w-full gap-2">
-					<li>
-						<Button
-							class="rounded-xl"
-							disabled={loading}
-							square={!sidebarOpen}
-							onclick={handleNewChat}
-						>
-							<Plus class="size-6" />
-							{#if sidebarOpen}
-								<span class="text-nowrap"> New Chat </span>
-							{/if}
-						</Button>
-					</li>
+			<nav class="flex flex-1 flex-col overflow-hidden">
+				<div class="shrink-0 pt-4 px-2">
+					<Button
+						block
+						class="rounded-xl"
+						disabled={loading}
+						square={!sidebarOpen}
+						onclick={handleNewChat}
+					>
+						<Plus class="size-6" />
+						{#if sidebarOpen}
+							<span class="text-nowrap"> New Chat </span>
+						{/if}
+					</Button>
+				</div>
 
-					<li class="separator"></li>
+				<div class="divider my-1"></div>
 
-					{#each chats as chat}
-						<li class="w-full">
-							<a
-								href={`/app/chats/${chat.id}`}
-								class={[
-									'btn flex w-full items-center gap-2 rounded-xl btn-ghost transition-all',
-									sidebarOpen ? 'btn-circle justify-start px-4' : 'justify-center',
-									isActive(`/app/chats/${chat.id}`) ? 'btn-soft' : ''
-								]}
-								title={!sidebarOpen ? chat.title || chat.id : ''}
-							>
-								{chat.id.slice(0, 2)}.
-								{#if sidebarOpen}
-									<span class="font-medium text-nowrap">{chat.title || chat.id}</span>
-								{/if}
-							</a>
-						</li>
-					{/each}
-				</ul>
+				<div class="flex-1 overflow-y-auto px-1">
+					<ul class="menu w-full gap-2">
+						{#each chats as chat}
+							<li class="w-full">
+								<a
+									href={`/app/chats/${chat.id}`}
+									class={[
+										'btn flex w-full items-center gap-2 rounded-xl btn-ghost transition-all',
+										sidebarOpen ? 'btn-circle justify-start px-4' : 'justify-center',
+										isActive(`/app/chats/${chat.id}`) ? 'btn-soft' : ''
+									]}
+									title={!sidebarOpen ? chat.title || chat.id : ''}
+								>
+									{chat.id.slice(0, 2)}.
+									{#if sidebarOpen}
+										<span class="font-medium text-nowrap">{chat.title || chat.id}</span>
+									{/if}
+								</a>
+							</li>
+						{/each}
+					</ul>
+				</div>
 			</nav>
+
+			<div class="divider my-1"></div>
 
 			{#if user}
 				<div class="mb-2 flex justify-center p-0">

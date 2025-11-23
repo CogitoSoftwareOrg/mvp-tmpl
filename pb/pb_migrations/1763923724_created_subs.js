@@ -34,10 +34,64 @@ migrate((app) => {
       },
       {
         "hidden": false,
-        "id": "number3262198954",
+        "id": "select2063623452",
+        "maxSelect": 1,
+        "name": "status",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "select",
+        "values": [
+          "active",
+          "incomplete",
+          "trialing",
+          "past_due",
+          "canceled",
+          "unpaid"
+        ]
+      },
+      {
+        "hidden": false,
+        "id": "select3141491994",
+        "maxSelect": 1,
+        "name": "stripeInterval",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "select",
+        "values": [
+          "year",
+          "month"
+        ]
+      },
+      {
+        "hidden": false,
+        "id": "date2201122646",
+        "max": "",
+        "min": "",
+        "name": "currentPeriodEnd",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "date"
+      },
+      {
+        "hidden": false,
+        "id": "date4294391523",
+        "max": "",
+        "min": "",
+        "name": "currentPeriodStart",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "date"
+      },
+      {
+        "hidden": false,
+        "id": "number1829536442",
         "max": null,
         "min": null,
-        "name": "pointsUsage",
+        "name": "pointsLimit",
         "onlyInt": false,
         "presentable": false,
         "required": false,
@@ -46,10 +100,10 @@ migrate((app) => {
       },
       {
         "hidden": false,
-        "id": "number1829536442",
+        "id": "number3262198954",
         "max": null,
         "min": null,
-        "name": "pointsLimit",
+        "name": "pointsUsage",
         "onlyInt": false,
         "presentable": false,
         "required": false,
@@ -127,46 +181,6 @@ migrate((app) => {
       },
       {
         "hidden": false,
-        "id": "date2201122646",
-        "max": "",
-        "min": "",
-        "name": "currentPeriodEnd",
-        "presentable": false,
-        "required": false,
-        "system": false,
-        "type": "date"
-      },
-      {
-        "hidden": false,
-        "id": "date4294391523",
-        "max": "",
-        "min": "",
-        "name": "currentPeriodStart",
-        "presentable": false,
-        "required": false,
-        "system": false,
-        "type": "date"
-      },
-      {
-        "hidden": false,
-        "id": "select2063623452",
-        "maxSelect": 1,
-        "name": "status",
-        "presentable": false,
-        "required": false,
-        "system": false,
-        "type": "select",
-        "values": [
-          "active",
-          "incomplete",
-          "trialing",
-          "past_due",
-          "canceled",
-          "unpaid"
-        ]
-      },
-      {
-        "hidden": false,
         "id": "autodate2990389176",
         "name": "created",
         "onCreate": true,
@@ -187,16 +201,13 @@ migrate((app) => {
       }
     ],
     "id": "pbc_3007198406",
-    "indexes": [
-      "CREATE INDEX `idx_HhsG9WqPMS` ON `subs` (`user`)",
-      "CREATE INDEX `idx_D10Ddtq6nR` ON `subs` (`stripeCustomer`)"
-    ],
-    "listRule": null,
+    "indexes": [],
+    "listRule": "@request.auth.id = user",
     "name": "subs",
     "system": false,
     "type": "base",
     "updateRule": null,
-    "viewRule": null
+    "viewRule": "@request.auth.id = user"
   });
 
   return app.save(collection);

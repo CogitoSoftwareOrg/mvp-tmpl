@@ -1,7 +1,7 @@
 /// <reference path="../pb_data/types.d.ts" />
 migrate((app) => {
   const collection = new Collection({
-    "createRule": null,
+    "createRule": "@request.auth.id = user",
     "deleteRule": null,
     "fields": [
       {
@@ -19,6 +19,19 @@ migrate((app) => {
         "type": "text"
       },
       {
+        "cascadeDelete": false,
+        "collectionId": "_pb_users_auth_",
+        "hidden": false,
+        "id": "relation2375276105",
+        "maxSelect": 1,
+        "minSelect": 0,
+        "name": "user",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "relation"
+      },
+      {
         "hidden": false,
         "id": "select2363381545",
         "maxSelect": 1,
@@ -28,40 +41,17 @@ migrate((app) => {
         "system": false,
         "type": "select",
         "values": [
-          "stripe"
+          "support",
+          "feature"
         ]
       },
       {
         "autogeneratePattern": "",
         "hidden": false,
-        "id": "text2324736937",
+        "id": "text4274335913",
         "max": 0,
         "min": 0,
-        "name": "key",
-        "pattern": "",
-        "presentable": false,
-        "primaryKey": false,
-        "required": false,
-        "system": false,
-        "type": "text"
-      },
-      {
-        "hidden": false,
-        "id": "json1326724116",
-        "maxSize": 0,
-        "name": "metadata",
-        "presentable": false,
-        "required": false,
-        "system": false,
-        "type": "json"
-      },
-      {
-        "autogeneratePattern": "",
-        "hidden": false,
-        "id": "text1579384326",
-        "max": 0,
-        "min": 0,
-        "name": "name",
+        "name": "content",
         "pattern": "",
         "presentable": false,
         "primaryKey": false,
@@ -90,12 +80,10 @@ migrate((app) => {
         "type": "autodate"
       }
     ],
-    "id": "pbc_1687431684",
-    "indexes": [
-      "CREATE INDEX `idx_akOVLT9yiv` ON `events` (`key`)"
-    ],
+    "id": "pbc_440916241",
+    "indexes": [],
     "listRule": null,
-    "name": "events",
+    "name": "feedbacks",
     "system": false,
     "type": "base",
     "updateRule": null,
@@ -104,7 +92,7 @@ migrate((app) => {
 
   return app.save(collection);
 }, (app) => {
-  const collection = app.findCollectionByNameOrId("pbc_1687431684");
+  const collection = app.findCollectionByNameOrId("pbc_440916241");
 
   return app.delete(collection);
 })

@@ -1,41 +1,61 @@
 /// <reference path="../pb_data/types.d.ts" />
 migrate((app) => {
-  const collection = app.findCollectionByNameOrId("pbc_440916241")
+  const collection = app.findCollectionByNameOrId("pbc_3007198406")
 
   // update field
   collection.fields.addAt(1, new Field({
     "hidden": false,
-    "id": "select2363381545",
+    "id": "select2489655421",
     "maxSelect": 1,
-    "name": "type",
+    "name": "tariff",
     "presentable": false,
     "required": true,
     "system": false,
     "type": "select",
     "values": [
-      "support",
-      "feature"
+      "free",
+      "plus"
     ]
   }))
 
   // update field
   collection.fields.addAt(2, new Field({
-    "autogeneratePattern": "",
     "hidden": false,
-    "id": "text4274335913",
-    "max": 0,
-    "min": 0,
-    "name": "content",
-    "pattern": "",
+    "id": "select2063623452",
+    "maxSelect": 1,
+    "name": "status",
     "presentable": false,
-    "primaryKey": false,
     "required": true,
     "system": false,
-    "type": "text"
+    "type": "select",
+    "values": [
+      "active",
+      "incomplete",
+      "trialing",
+      "past_due",
+      "canceled",
+      "unpaid"
+    ]
   }))
 
   // update field
   collection.fields.addAt(3, new Field({
+    "hidden": false,
+    "id": "select3141491994",
+    "maxSelect": 1,
+    "name": "stripeInterval",
+    "presentable": false,
+    "required": true,
+    "system": false,
+    "type": "select",
+    "values": [
+      "year",
+      "month"
+    ]
+  }))
+
+  // update field
+  collection.fields.addAt(12, new Field({
     "cascadeDelete": false,
     "collectionId": "_pb_users_auth_",
     "hidden": false,
@@ -51,42 +71,62 @@ migrate((app) => {
 
   return app.save(collection)
 }, (app) => {
-  const collection = app.findCollectionByNameOrId("pbc_440916241")
+  const collection = app.findCollectionByNameOrId("pbc_3007198406")
 
   // update field
   collection.fields.addAt(1, new Field({
     "hidden": false,
-    "id": "select2363381545",
+    "id": "select2489655421",
     "maxSelect": 1,
-    "name": "type",
+    "name": "tariff",
     "presentable": false,
     "required": false,
     "system": false,
     "type": "select",
     "values": [
-      "support",
-      "feature"
+      "free",
+      "plus"
     ]
   }))
 
   // update field
   collection.fields.addAt(2, new Field({
-    "autogeneratePattern": "",
     "hidden": false,
-    "id": "text4274335913",
-    "max": 0,
-    "min": 0,
-    "name": "content",
-    "pattern": "",
+    "id": "select2063623452",
+    "maxSelect": 1,
+    "name": "status",
     "presentable": false,
-    "primaryKey": false,
     "required": false,
     "system": false,
-    "type": "text"
+    "type": "select",
+    "values": [
+      "active",
+      "incomplete",
+      "trialing",
+      "past_due",
+      "canceled",
+      "unpaid"
+    ]
   }))
 
   // update field
   collection.fields.addAt(3, new Field({
+    "hidden": false,
+    "id": "select3141491994",
+    "maxSelect": 1,
+    "name": "stripeInterval",
+    "presentable": false,
+    "required": false,
+    "system": false,
+    "type": "select",
+    "values": [
+      "year",
+      "month"
+    ]
+  }))
+
+  // update field
+  collection.fields.addAt(12, new Field({
     "cascadeDelete": false,
     "collectionId": "_pb_users_auth_",
     "hidden": false,

@@ -220,7 +220,7 @@
 					</a>
 				{:else}
 					<a
-						href="/app/auth"
+						href="/app/auth/sign-up"
 						class="flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-base-300"
 						class:justify-center={!sidebarOpen}
 						title={!sidebarOpen ? 'Settings' : 'Auth'}

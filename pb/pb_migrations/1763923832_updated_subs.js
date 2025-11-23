@@ -4,7 +4,9 @@ migrate((app) => {
 
   // update collection data
   unmarshal({
-    "viewRule": "@request.auth.id = user"
+    "indexes": [
+      "CREATE INDEX `idx_CLTFpguxCM` ON `subs` (`user`)"
+    ]
   }, collection)
 
   return app.save(collection)
@@ -13,7 +15,7 @@ migrate((app) => {
 
   // update collection data
   unmarshal({
-    "viewRule": null
+    "indexes": []
   }, collection)
 
   return app.save(collection)

@@ -37,7 +37,7 @@
 						<div class="flex items-center gap-4">
 							<ThemeController />
 							<a
-								href="/app/auth"
+								href="/app/auth/sign-up"
 								class="btn border-none shadow-[0_0_20px_-5px_var(--color-primary)] transition-all duration-300 btn-primary hover:shadow-[0_0_30px_-5px_var(--color-primary)]"
 							>
 								Get Started Free

@@ -1,7 +1,7 @@
 /// <reference path="../pb_data/types.d.ts" />
 migrate((app) => {
   const collection = new Collection({
-    "createRule": null,
+    "createRule": "@request.auth.id = chat.user",
     "deleteRule": null,
     "fields": [
       {
@@ -20,16 +20,54 @@ migrate((app) => {
       },
       {
         "hidden": false,
-        "id": "select2363381545",
+        "id": "select1466534506",
         "maxSelect": 1,
-        "name": "type",
+        "name": "role",
         "presentable": false,
-        "required": false,
+        "required": true,
         "system": false,
         "type": "select",
         "values": [
-          "support",
-          "feature"
+          "user",
+          "ai"
+        ]
+      },
+      {
+        "cascadeDelete": false,
+        "collectionId": "pbc_3861817060",
+        "hidden": false,
+        "id": "relation1704850090",
+        "maxSelect": 1,
+        "minSelect": 0,
+        "name": "chat",
+        "presentable": false,
+        "required": true,
+        "system": false,
+        "type": "relation"
+      },
+      {
+        "hidden": false,
+        "id": "json1326724116",
+        "maxSize": 0,
+        "name": "metadata",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "json"
+      },
+      {
+        "hidden": false,
+        "id": "select2063623452",
+        "maxSelect": 1,
+        "name": "status",
+        "presentable": false,
+        "required": true,
+        "system": false,
+        "type": "select",
+        "values": [
+          "streaming",
+          "final",
+          "optimistic"
         ]
       },
       {
@@ -45,19 +83,6 @@ migrate((app) => {
         "required": false,
         "system": false,
         "type": "text"
-      },
-      {
-        "cascadeDelete": false,
-        "collectionId": "_pb_users_auth_",
-        "hidden": false,
-        "id": "relation2375276105",
-        "maxSelect": 1,
-        "minSelect": 0,
-        "name": "user",
-        "presentable": false,
-        "required": false,
-        "system": false,
-        "type": "relation"
       },
       {
         "hidden": false,
@@ -80,19 +105,21 @@ migrate((app) => {
         "type": "autodate"
       }
     ],
-    "id": "pbc_440916241",
-    "indexes": [],
-    "listRule": null,
-    "name": "feedbacks",
+    "id": "pbc_2605467279",
+    "indexes": [
+      "CREATE INDEX `idx_owDwHAxYel` ON `messages` (`chat`)"
+    ],
+    "listRule": "@request.auth.id = chat.user",
+    "name": "messages",
     "system": false,
     "type": "base",
     "updateRule": null,
-    "viewRule": null
+    "viewRule": "@request.auth.id = chat.user"
   });
 
   return app.save(collection);
 }, (app) => {
-  const collection = app.findCollectionByNameOrId("pbc_440916241");
+  const collection = app.findCollectionByNameOrId("pbc_2605467279");
 
   return app.delete(collection);
 })

@@ -26,14 +26,14 @@
 						<h2 class="m-0 text-2xl font-bold">Agreement to Terms</h2>
 					</div>
 					<p class="m-0 text-lg">
-						By accessing and using YouStory, you agree to be bound by these Terms and Conditions. If
+						By accessing and using Cogito Software, you agree to be bound by these Terms and Conditions. If
 						you do not agree with any part of these terms, you may not use our service.
 					</p>
 				</div>
 
 				<h2>Acceptable Use</h2>
 				<p>
-					You agree to use YouStory only for lawful purposes and in accordance with these Terms.
+					You agree to use Cogito Software only for lawful purposes and in accordance with these Terms.
 				</p>
 				<p>You agree not to:</p>
 				<ul>
@@ -50,7 +50,7 @@
 						<h2 class="m-0 text-2xl font-bold">User Content</h2>
 					</div>
 					<p class="m-0 text-lg">
-						You retain all rights to the content you create on YouStory. You are solely responsible
+						You retain all rights to the content you create on Cogito Software. You are solely responsible
 						for the content you create and ensure it complies with these Terms. We reserve the right
 						to remove content that violates our policies.
 					</p>
@@ -76,14 +76,14 @@
 						<h2 class="m-0 text-2xl font-bold">Limitation of Liability</h2>
 					</div>
 					<p class="m-0 text-lg">
-						To the maximum extent permitted by law, YouStory shall not be liable for any indirect,
+						To the maximum extent permitted by law, Cogito Software shall not be liable for any indirect,
 						incidental, special, or consequential damages arising from your use of the service.
 					</p>
 				</div>
 
 				<h2>Intellectual Property</h2>
 				<p>
-					The YouStory platform, including its design, features, and functionality, is owned by us
+					The Cogito Software platform, including its design, features, and functionality, is owned by us
 					and protected by intellectual property laws. You may not copy, modify, or create
 					derivative works based on our platform without our express written permission.
 				</p>

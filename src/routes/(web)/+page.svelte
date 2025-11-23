@@ -1,12 +1,18 @@
 <script lang="ts">
 	import {
-		Sparkles,
+		Rocket,
+		Zap,
+		Code2,
+		Database,
+		Brain,
+		CreditCard,
+		Smartphone,
+		Layers,
+		Check,
 		ArrowRight,
-		Ghost,
-		Crown,
-		HeartHandshake,
-		Wand2,
-		Fingerprint
+		Cpu,
+		Globe,
+		Shield
 	} from 'lucide-svelte';
 </script>
 
@@ -34,230 +40,245 @@
 			<div
 				class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-base-200/50 backdrop-blur-md border border-base-content/5 mb-8 animate-fade-in-up"
 			>
-				<Sparkles class="w-4 h-4 text-primary" />
-				<span class="text-sm font-medium text-base-content/80">Experience the Impossible</span>
+				<Rocket class="w-4 h-4 text-primary" />
+				<span class="text-sm font-medium text-base-content/80">Ship Faster Than Ever</span>
 			</div>
 
 			<h1
-				class="max-w-5xl mx-auto text-6xl md:text-8xl font-black tracking-tight leading-tight mb-8 animate-fade-in-up delay-100"
+				class="max-w-5xl mx-auto text-5xl md:text-7xl font-black tracking-tight leading-tight mb-8 animate-fade-in-up delay-100"
 			>
-				Live the <span
+				Launch Your <span
 					class="text-transparent bg-clip-text bg-linear-to-r from-primary via-secondary to-accent"
-					>Unlived</span
+					>AI Product</span
 				>
+				<br />in Days, Not Months
 			</h1>
 
 			<p
 				class="max-w-2xl mx-auto text-xl md:text-2xl text-base-content/70 leading-relaxed mb-12 animate-fade-in-up delay-200"
 			>
-				Step into a reality where you make the rules. Explore fantasies, connections, and adventures
-				that exist only in your wildest dreams.
+				The ultimate production-ready template. SvelteKit, PocketBase, AI integration, Payments, and
+				Authentication. Everything you need to build the next big thing.
 			</p>
 
 			<div
 				class="flex flex-col sm:flex-row items-center justify-center gap-6 animate-fade-in-up delay-300"
 			>
 				<a
-					href="/app/auth/sign-up"
+					href="#pricing"
 					class="group relative px-8 py-4 bg-primary text-primary-content font-bold text-lg rounded-2xl overflow-hidden transition-all hover:scale-105 hover:shadow-[0_0_40px_-10px_var(--color-primary)]"
 				>
 					<div
 						class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"
 					></div>
 					<span class="relative flex items-center gap-2">
-						Start Your Story
+						Get the Template
 						<ArrowRight class="w-5 h-5 group-hover:translate-x-1 transition-transform" />
 					</span>
 				</a>
 				<a
-					href="#features"
+					href="#stack"
 					class="text-base-content/70 hover:text-base-content font-medium transition-colors"
 				>
-					Explore Features
+					View Tech Stack
 				</a>
 			</div>
 		</div>
-
-		<!-- Floating UI Elements (Decorative) -->
-		<div class="absolute top-1/4 left-10 hidden lg:block animate-float-slow">
-			<div class="glass-card p-4 rounded-2xl flex items-center gap-4 max-w-xs">
-				<div class="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center">
-					<HeartHandshake class="w-5 h-5 text-accent" />
-				</div>
-				<div>
-					<div class="text-xs text-base-content/50">Current Status</div>
-					<div class="text-sm font-bold">Deeply Connected</div>
-				</div>
-			</div>
-		</div>
-
-		<div class="absolute bottom-1/4 right-10 hidden lg:block animate-float-slower">
-			<div class="glass-card p-4 rounded-2xl flex items-center gap-4 max-w-xs">
-				<div class="w-10 h-10 rounded-full bg-secondary/20 flex items-center justify-center">
-					<Crown class="w-5 h-5 text-secondary" />
-				</div>
-				<div>
-					<div class="text-xs text-base-content/50">Achievement</div>
-					<div class="text-sm font-bold">Ruler of Worlds</div>
-				</div>
-			</div>
-		</div>
 	</section>
 
-	<!-- Value Proposition Section -->
-	<section id="features" class="py-32 relative">
+	<!-- Tech Stack Section -->
+	<section id="stack" class="py-20 bg-base-200/30">
 		<div class="container mx-auto px-6">
-			<div class="grid md:grid-cols-3 gap-12">
-				<!-- Feature 1 -->
-				<div
-					class="group p-8 rounded-3xl bg-base-200/30 hover:bg-base-200/50 border border-base-content/5 transition-all hover:-translate-y-2 duration-300"
-				>
+			<div class="text-center mb-16">
+				<h2 class="text-3xl md:text-4xl font-bold mb-4">Built with Modern Tech</h2>
+				<p class="text-base-content/60">A robust, scalable foundation for your application.</p>
+			</div>
+			<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
+				{#each [
+					{ icon: Globe, name: 'SvelteKit', desc: 'Fullstack Framework' },
+					{ icon: Database, name: 'PocketBase', desc: 'Realtime Backend' },
+					{ icon: Brain, name: 'OpenAI', desc: 'AI Intelligence' },
+					{ icon: CreditCard, name: 'Stripe', desc: 'Payments' },
+					{ icon: Layers, name: 'DaisyUI', desc: 'UI Components' },
+					{ icon: Cpu, name: 'Meilisearch', desc: 'Vector Search' }
+				] as tech}
 					<div
-						class="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300"
+						class="flex flex-col items-center p-6 rounded-2xl bg-base-100 border border-base-content/5 hover:border-primary/20 transition-colors"
 					>
-						<Ghost class="w-7 h-7 text-primary" />
+						<div class="w-12 h-12 rounded-xl bg-base-200 flex items-center justify-center mb-4">
+							<svelte:component this={tech.icon} class="w-6 h-6 text-primary" />
+						</div>
+						<h3 class="font-bold mb-1">{tech.name}</h3>
+						<p class="text-xs text-base-content/50">{tech.desc}</p>
 					</div>
-					<h3 class="text-2xl font-bold mb-4">No Judgment</h3>
-					<p class="text-base-content/70 leading-relaxed">
-						Your private world. Express your deepest desires and explore scenarios you'd never dare
-						in reality. Total freedom, zero consequences.
-					</p>
-				</div>
+				{/each}
+			</div>
+		</div>
+	</section>
 
-				<!-- Feature 2 -->
-				<div
-					class="group p-8 rounded-3xl bg-base-200/30 hover:bg-base-200/50 border border-base-content/5 transition-all hover:-translate-y-2 duration-300 delay-100"
-				>
-					<div
-						class="w-14 h-14 rounded-2xl bg-secondary/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300"
-					>
-						<Wand2 class="w-7 h-7 text-secondary" />
-					</div>
-					<h3 class="text-2xl font-bold mb-4">Infinite Possibilities</h3>
-					<p class="text-base-content/70 leading-relaxed">
-						From medieval kingdoms to cyberpunk cities. Be a hero, a villain, or a lover. The only
-						limit is your imagination.
+	<!-- Features Grid -->
+	<section class="py-32 relative">
+		<div class="container mx-auto px-6">
+			<div class="grid md:grid-cols-2 gap-12 items-center">
+				<div>
+					<h2 class="text-4xl md:text-5xl font-bold mb-6">Everything Included</h2>
+					<p class="text-xl text-base-content/70 mb-8">
+						Don't waste time setting up boilerplate. We've handled the hard parts so you can focus
+						on your unique value proposition.
 					</p>
+					<div class="space-y-6">
+						{#each [
+							'Production-ready Authentication flow',
+							'Stripe Subscription & One-time payments',
+							'AI Chat interface with streaming',
+							'Vector Memory & Semantic Search',
+							'Domain-Driven Design Architecture',
+							'Progressive Web App (PWA) setup'
+						] as feature}
+							<div class="flex items-center gap-4">
+								<div class="w-6 h-6 rounded-full bg-success/20 flex items-center justify-center">
+									<Check class="w-3 h-3 text-success" />
+								</div>
+								<span class="font-medium">{feature}</span>
+							</div>
+						{/each}
+					</div>
 				</div>
-
-				<!-- Feature 3 -->
-				<div
-					class="group p-8 rounded-3xl bg-base-200/30 hover:bg-base-200/50 border border-base-content/5 transition-all hover:-translate-y-2 duration-300 delay-200"
-				>
+				<div class="relative">
 					<div
-						class="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300"
-					>
-						<Fingerprint class="w-7 h-7 text-accent" />
+						class="absolute inset-0 bg-linear-to-br from-primary/20 to-secondary/20 rounded-3xl blur-3xl"
+					></div>
+					<div class="relative bg-base-100 rounded-3xl border border-base-content/10 p-8 shadow-2xl">
+						<div class="space-y-4">
+							<div class="flex items-center gap-4 p-4 rounded-xl bg-base-200/50">
+								<Code2 class="w-8 h-8 text-primary" />
+								<div>
+									<div class="font-bold">Clean Codebase</div>
+									<div class="text-sm text-base-content/60">TypeScript & Modular Architecture</div>
+								</div>
+							</div>
+							<div class="flex items-center gap-4 p-4 rounded-xl bg-base-200/50">
+								<Shield class="w-8 h-8 text-secondary" />
+								<div>
+									<div class="font-bold">Secure by Default</div>
+									<div class="text-sm text-base-content/60">RLS & Type-safe APIs</div>
+								</div>
+							</div>
+							<div class="flex items-center gap-4 p-4 rounded-xl bg-base-200/50">
+								<Smartphone class="w-8 h-8 text-accent" />
+								<div>
+									<div class="font-bold">Mobile First</div>
+									<div class="text-sm text-base-content/60">Responsive & PWA Ready</div>
+								</div>
+							</div>
+						</div>
 					</div>
-					<h3 class="text-2xl font-bold mb-4">Uniquely Yours</h3>
-					<p class="text-base-content/70 leading-relaxed">
-						AI that learns your style and preferences. Every interaction is tailored to you,
-						creating a bond that feels genuinely real.
-					</p>
 				</div>
 			</div>
 		</div>
 	</section>
 
-	<!-- Immersion/How it works Section -->
-	<section class="py-32 bg-base-200/50 relative overflow-hidden">
+	<!-- Pricing & Offer Section -->
+	<section id="pricing" class="py-32 bg-base-200/50 relative overflow-hidden">
 		<!-- Decorative Blur -->
 		<div
 			class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-primary/5 rounded-full blur-[150px]"
 		></div>
 
 		<div class="container relative z-10 mx-auto px-6">
-			<div class="max-w-4xl mx-auto text-center mb-20">
-				<h2 class="text-4xl md:text-6xl font-bold mb-6">How Your World Comes Alive</h2>
-				<p class="text-xl text-base-content/70">Three simple steps to escape reality.</p>
+			<div class="text-center mb-20">
+				<h2 class="text-4xl md:text-6xl font-bold mb-6">Start Building Today</h2>
+				<p class="text-xl text-base-content/70">Choose the path that fits your needs.</p>
 			</div>
 
-			<div class="grid md:grid-cols-3 gap-8 relative">
-				<!-- Connecting Line (Desktop) -->
+			<div class="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+				<!-- Template Access -->
 				<div
-					class="hidden md:block absolute top-12 left-[16%] right-[16%] h-0.5 bg-linear-to-r from-transparent via-base-content/10 to-transparent"
-				></div>
-
-				<!-- Step 1 -->
-				<div class="relative text-center">
-					<div
-						class="w-24 h-24 mx-auto bg-base-100 rounded-full border-4 border-base-200 flex items-center justify-center mb-6 relative z-10 shadow-xl"
-					>
-						<span class="text-3xl font-black text-primary">1</span>
+					class="relative group p-1 rounded-3xl bg-linear-to-b from-primary/50 to-secondary/50 hover:from-primary hover:to-secondary transition-all duration-300"
+				>
+					<div class="h-full bg-base-100 rounded-[22px] p-8 md:p-12 flex flex-col relative overflow-hidden">
+                        <div class="absolute top-0 right-0 bg-primary text-primary-content text-xs font-bold px-3 py-1 rounded-bl-xl">POPULAR</div>
+						<div class="mb-8">
+							<h3 class="text-2xl font-bold mb-2">Source Code Access</h3>
+							<p class="text-base-content/60">Get full access to the repository and start coding.</p>
+						</div>
+						<div class="mb-8">
+							<div class="flex items-baseline gap-2">
+								<span class="text-5xl font-black">$99</span>
+								<span class="text-2xl text-base-content/40 line-through">$200</span>
+							</div>
+							<p class="text-sm text-success font-medium mt-2">Limited time offer</p>
+						</div>
+						<ul class="space-y-4 mb-12 flex-1">
+							{#each ['Full Source Code', 'MIT License', 'Lifetime Updates', 'Documentation', 'Discord Support'] as item}
+								<li class="flex items-center gap-3">
+									<Check class="w-5 h-5 text-primary" />
+									<span>{item}</span>
+								</li>
+							{/each}
+						</ul>
+						<button
+							class="btn btn-primary w-full text-lg h-14 rounded-xl shadow-[0_0_20px_-5px_var(--color-primary)]"
+						>
+							Buy Now
+						</button>
 					</div>
-					<h3 class="text-xl font-bold mb-2">Choose a Persona</h3>
-					<p class="text-base-content/60">Pick who you want to be and who you want to meet.</p>
 				</div>
 
-				<!-- Step 2 -->
-				<div class="relative text-center">
-					<div
-						class="w-24 h-24 mx-auto bg-base-100 rounded-full border-4 border-base-200 flex items-center justify-center mb-6 relative z-10 shadow-xl"
-					>
-						<span class="text-3xl font-black text-secondary">2</span>
+				<!-- Custom Development -->
+				<div
+					class="relative group p-1 rounded-3xl bg-base-content/10 hover:bg-base-content/20 transition-all duration-300"
+				>
+					<div class="h-full bg-base-100 rounded-[22px] p-8 md:p-12 flex flex-col">
+						<div class="mb-8">
+							<h3 class="text-2xl font-bold mb-2">Custom Development</h3>
+							<p class="text-base-content/60">Need a tailored solution? We build it for you.</p>
+						</div>
+						<div class="mb-8">
+							<div class="flex items-baseline gap-2">
+								<span class="text-5xl font-black">$999</span>
+								<span class="text-2xl text-base-content/40 line-through">$2000</span>
+							</div>
+							<p class="text-sm text-base-content/40 mt-2">Based on your requirements</p>
+						</div>
+						<ul class="space-y-4 mb-12 flex-1">
+							{#each ['Professional Development', 'UI/UX Design', 'Custom Features', 'Deployment Setup', 'Maintenance Support'] as item}
+								<li class="flex items-center gap-3">
+									<Zap class="w-5 h-5 text-secondary" />
+									<span>{item}</span>
+								</li>
+							{/each}
+						</ul>
+						<a
+							href="https://cogitosoftware.nl/mvp-offer"
+							target="_blank"
+							class="btn btn-outline w-full text-lg h-14 rounded-xl hover:bg-base-content hover:text-base-100"
+						>
+							Contact Us
+						</a>
 					</div>
-					<h3 class="text-xl font-bold mb-2">Set the Scene</h3>
-					<p class="text-base-content/60">Define the world, the mood, and the stakes.</p>
-				</div>
-
-				<!-- Step 3 -->
-				<div class="relative text-center">
-					<div
-						class="w-24 h-24 mx-auto bg-base-100 rounded-full border-4 border-base-200 flex items-center justify-center mb-6 relative z-10 shadow-xl"
-					>
-						<span class="text-3xl font-black text-accent">3</span>
-					</div>
-					<h3 class="text-xl font-bold mb-2">Live the Moment</h3>
-					<p class="text-base-content/60">Dive in. The story reacts to your every move.</p>
 				</div>
 			</div>
 		</div>
 	</section>
 
-	<!-- CTA Section -->
-	<section class="py-32 relative overflow-hidden">
-		<div
-			class="absolute inset-0 bg-linear-to-br from-primary/20 via-base-100 to-secondary/20 opacity-50"
-		></div>
-
-		<div class="container relative z-10 mx-auto px-6 text-center">
-			<h2 class="text-5xl md:text-7xl font-black mb-8 tracking-tight">
-				Your Story Begins <span class="text-primary">Now</span>
-			</h2>
-			<p class="text-xl md:text-2xl text-base-content/70 mb-12 max-w-2xl mx-auto">
-				Don't just read about adventures. Live them.
+	<!-- Footer -->
+	<footer class="py-12 border-t border-base-content/10">
+		<div class="container mx-auto px-6 text-center">
+			<p class="text-base-content/50">
+				&copy; {new Date().getFullYear()} Cogito Software. All rights reserved.
 			</p>
-			<a
-				href="/app/auth/sign-up"
-				class="btn btn-primary btn-lg px-12 text-xl rounded-2xl h-16 shadow-[0_0_30px_-5px_var(--color-primary)] hover:shadow-[0_0_50px_-5px_var(--color-primary)] hover:scale-105 transition-all duration-300 border-none"
-			>
-				Enter the Portal
-			</a>
 		</div>
-	</section>
+	</footer>
 </div>
 
 <style>
-	.glass-card {
-		background: rgba(255, 255, 255, 0.05);
-		backdrop-filter: blur(10px);
-		border: 1px solid rgba(255, 255, 255, 0.1);
-	}
-
 	.animate-pulse-slow {
 		animation: pulse 8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 	}
 
 	.animate-pulse-slower {
 		animation: pulse 12s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-	}
-
-	.animate-float-slow {
-		animation: float 6s ease-in-out infinite;
-	}
-
-	.animate-float-slower {
-		animation: float 8s ease-in-out infinite reverse;
 	}
 
 	.animate-fade-in-up {
@@ -274,16 +295,6 @@
 	}
 	.delay-300 {
 		animation-delay: 300ms;
-	}
-
-	@keyframes float {
-		0%,
-		100% {
-			transform: translateY(0);
-		}
-		50% {
-			transform: translateY(-20px);
-		}
 	}
 
 	@keyframes fadeInUp {

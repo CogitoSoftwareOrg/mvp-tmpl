@@ -26,7 +26,7 @@
 						<h2 class="m-0 text-2xl font-bold">Your Privacy Matters</h2>
 					</div>
 					<p class="m-0 text-lg">
-						At YouStory, we are committed to protecting your privacy and ensuring the security of
+						At cogitosoftware, we are committed to protecting your privacy and ensuring the security of
 						your personal data. This Privacy Policy explains how we collect, use, and safeguard your
 						information.
 					</p>

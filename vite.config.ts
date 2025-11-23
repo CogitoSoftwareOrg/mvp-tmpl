@@ -15,13 +15,13 @@ export default defineConfig({
 			registerType: 'autoUpdate',
 			includeAssets: ['favicon_io/favicon.ico', 'robots.txt', 'favicon_io/apple-touch-icon.png'],
 			manifest: {
-				name: 'YouStory',
-				short_name: 'YouStory',
+				name: 'MVP Template',
+				short_name: 'mvp-tmpl',
 				start_url: '/app',
 				scope: '/app',
 				display: 'standalone',
 				background_color: '#ffffff',
-				theme_color: '#f0c4eb',
+				theme_color: '#0089d7',
 				icons: [
 					{ src: 'favicon_io/android-chrome-192x192.png', sizes: '192x192', type: 'image/png' },
 					{ src: 'favicon_io/android-chrome-512x512.png', sizes: '512x512', type: 'image/png' }

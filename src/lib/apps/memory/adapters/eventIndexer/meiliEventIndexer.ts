@@ -1,5 +1,5 @@
 import { type Index, MeiliSearch, type UserProvidedEmbedder } from 'meilisearch';
-import { MEILI_URL, MEILI_MASTER_KEY } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 
 import { nanoid } from '$lib/shared';
 
@@ -39,8 +39,8 @@ export class MeiliEventIndexer implements EventIndexer {
 		if (building) return;
 
 		this.client = new MeiliSearch({
-			host: MEILI_URL,
-			apiKey: MEILI_MASTER_KEY
+			host: env.MEILI_URL,
+			apiKey: env.MEILI_MASTER_KEY
 		});
 		this.index = this.client.index('events');
 	}

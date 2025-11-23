@@ -1,5 +1,5 @@
 import { browser } from '$app/environment';
-import { PUBLIC_PB_URL } from '$env/static/public';
+import { env } from '$env/dynamic/public';
 import PocketBase, { AsyncAuthStore } from 'pocketbase';
 
 import type { TypedPocketBase } from './pocketbase-types';
@@ -15,7 +15,7 @@ const store = new AsyncAuthStore({
 	}
 });
 
-export const pb = new PocketBase(PUBLIC_PB_URL, store) as TypedPocketBase;
+export const pb = new PocketBase(env.PUBLIC_PB_URL, store) as TypedPocketBase;
 
 pb.autoCancellation(true);
 if (!browser) {

@@ -1,4 +1,4 @@
 import { VoyageAIClient } from 'voyageai';
-import { VOYAGE_API_KEY } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 
-export const voyage = new VoyageAIClient({ apiKey: VOYAGE_API_KEY });
+export const voyage = new VoyageAIClient({ apiKey: env.VOYAGE_API_KEY });

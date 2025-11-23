@@ -22,7 +22,7 @@ export type ProfileDoc = {
 	createdAt: string;
 	tokens: number;
 	importance: Importance;
-	charactersCount: number;
+	profilesCount: number;
 	_vectors: Record<string, number[]>;
 };
 
@@ -51,10 +51,10 @@ export class MeiliProfileIndexer implements ProfileIndexer {
 		await this.index.updateEmbedders(PROFILE_EMBEDDERS);
 		await this.index.updateFilterableAttributes([
 			'type',
-			'characterIds',
+			'profileIds',
 			'createdAt',
 			'importance',
-			'charactersCount'
+			'profilesCount'
 		]);
 	}
 
@@ -118,7 +118,7 @@ export class MeiliProfileIndexer implements ProfileIndexer {
 				content: memory.content,
 				tokens: memory.tokens,
 				importance: memory.importance,
-				charactersCount: 1,
+				profilesCount: 1,
 				createdAt: new Date().toISOString(),
 				_vectors: {
 					[VOYAGE_EMBEDDER]: embedding
@@ -183,20 +183,20 @@ export class MeiliProfileIndexer implements ProfileIndexer {
 		return memories;
 	}
 
-	private buildProfilesFilter(charIds: string[]): string {
-		if (charIds.length === 0) return '';
+	private buildProfilesFilter(profileIds: string[]): string {
+		if (profileIds.length === 0) return '';
 
-		const personalFilter = `(charactersCount = 1 AND characterIds IN ["${charIds.join('","')}"])`;
+		const personalFilter = `(profilesCount = 1 AND profileIds IN ["${profileIds.join('","')}"])`;
 
 		const pairFilters: string[] = [];
 
-		for (let i = 0; i < charIds.length; i++) {
-			for (let j = i + 1; j < charIds.length; j++) {
-				const a = charIds[i];
-				const b = charIds[j];
+		for (let i = 0; i < profileIds.length; i++) {
+			for (let j = i + 1; j < profileIds.length; j++) {
+				const a = profileIds[i];
+				const b = profileIds[j];
 
 				pairFilters.push(
-					`(charactersCount = 2 AND characterIds IN ["${a}"] AND characterIds IN ["${b}"])`
+					`(profilesCount = 2 AND profileIds IN ["${a}"] AND profileIds IN ["${b}"])`
 				);
 			}
 		}

@@ -1,25 +1,63 @@
-import type {
-	MemoryGetCmd,
-	MemoryApp,
-	ProfileIndexer,
-	EventIndexer,
-	ProfileMemory,
-	EventMemory,
-	MemoryPutCmd,
-	StaticMemory,
-	MemporyGetResult
-} from '../core';
+import z from 'zod';
+import { zodFunction } from 'openai/helpers/zod.js';
+
+import type { Tool } from '$lib/apps/brain/core';
 import { LLMS, TOKENIZERS } from '$lib/shared/server';
+
+import {
+	type MemoryGetCmd,
+	type MemoryApp,
+	type ProfileIndexer,
+	type EventIndexer,
+	type ProfileMemory,
+	type EventMemory,
+	type MemoryPutCmd,
+	type StaticMemory,
+	type MemporyGetResult,
+	ProfileType,
+	Importance,
+	EventType
+} from '../core';
 
 const DAYS_TO_SEARCH_LATEST_MEMORIES = 7;
 // const STATIC_TOKEN_LIMIT = 2000;
 
 export class MemoryAppImpl implements MemoryApp {
+	searchTool: Tool;
+	putTool: Tool;
 	constructor(
 		// ADAPTERS
 		private readonly profileIndexer: ProfileIndexer,
 		private readonly eventIndexer: EventIndexer
-	) {}
+	) {
+		this.searchTool = zodFunction({
+			name: 'search_memories',
+			description: 'Search the memories for relevant information',
+			parameters: z.object({
+				query: z.string().describe('The query to search for')
+			})
+		});
+		this.putTool = zodFunction({
+			name: 'save_memories',
+			description: 'Save important new memories',
+			parameters: z.object({
+				profiles: z.array(
+					z.object({
+						type: z.enum(Object.values(ProfileType)).describe('The type of the profile'),
+						importance: z.enum(Object.values(Importance)).describe('The importance of the profile'),
+						content: z.string().describe('The content of the profile')
+					})
+				),
+				events: z.array(
+					z.object({
+						type: z.enum(Object.values(EventType)).describe('The type of the event'),
+						importance: z.enum(Object.values(Importance)).describe('The importance of the event'),
+						content: z.string().describe('The content of the event')
+					})
+				)
+			})
+		});
+	}
 
 	async get(cmd: MemoryGetCmd): Promise<MemporyGetResult> {
 		let remainingTokens = cmd.tokens;
@@ -47,6 +85,9 @@ export class MemoryAppImpl implements MemoryApp {
 	}
 
 	async put(cmd: MemoryPutCmd): Promise<void> {
+		console.log(
+			`Memory put tool called, profiles: ${cmd.profiles?.length}, events: ${cmd.events?.length}`
+		);
 		const profileMemories: ProfileMemory[] = [];
 		const eventMemories: EventMemory[] = [];
 

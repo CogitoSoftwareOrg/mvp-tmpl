@@ -73,7 +73,9 @@
 					>
 						<div class="card-body flex flex-row items-center gap-3">
 							<div class="avatar placeholder">
-								<div class="bg-primary/10 text-primary w-10 rounded-full">
+								<div
+									class="bg-primary/10 text-primary w-10 rounded-full flex items-center justify-center"
+								>
 									<span class="text-lg font-bold">
 										{(chat.title || 'N').charAt(0).toUpperCase()}
 									</span>

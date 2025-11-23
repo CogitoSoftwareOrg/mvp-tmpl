@@ -1,3 +1,5 @@
+import type { Tool } from '$lib/apps/brain/core';
+
 import type {
 	EventMemory,
 	EventType,
@@ -37,6 +39,9 @@ export type MemoryPutCmd = {
 };
 
 export interface MemoryApp {
+	searchTool: Tool;
+	putTool: Tool;
+
 	get(cmd: MemoryGetCmd): Promise<MemporyGetResult>;
 	put(cmd: MemoryPutCmd): Promise<void>;
 }

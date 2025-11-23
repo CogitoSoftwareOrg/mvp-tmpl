@@ -1,3 +1,4 @@
+import type { BrainApp } from '$lib/apps/brain/core';
 import type { MemoryApp } from '$lib/apps/memory/core';
 import {
 	Collections,
@@ -8,7 +9,7 @@ import {
 	type ChatsResponse,
 	ChatsStatusOptions
 } from '$lib/shared';
-import { grok, LLMS, TOKENIZERS } from '$lib/shared/server';
+import { LLMS, TOKENIZERS } from '$lib/shared/server';
 
 import {
 	Chat,
@@ -19,24 +20,32 @@ import {
 } from '../core';
 
 const HISTORY_TOKENS = 2000;
+const INITIAL_MEMORY_TOKENS = 1000;
 
 export class ChatAppImpl implements ChatApp {
-	constructor(private readonly memoryApp: MemoryApp) {}
+	constructor(
+		private readonly brainApp: BrainApp,
+		private readonly memoryApp: MemoryApp
+	) {}
 
 	async run(cmd: SendUserMessageCmd): Promise<string> {
-		const { aiMsg, history } = await this.prepare(cmd);
-		const completion = await grok.chat.completions.create({
-			model: LLMS.GROK_4_1_FAST_NON_REASONING,
-			messages: [...history, { role: 'user', content: cmd.query }]
+		const { aiMsg, history, memo } = await this.prepare(cmd);
+
+		const content = await this.brainApp.run({
+			history,
+			memo,
+			profileId: cmd.principal.user.id,
+			chatId: cmd.chatId
 		});
-		const content = completion.choices[0].message.content || '';
+
 		await this.postProcess(aiMsg.id, content);
 		return aiMsg.content || '';
 	}
 
 	async runStream(cmd: SendUserMessageCmd): Promise<ReadableStream> {
-		const { aiMsg, history } = await this.prepare(cmd);
+		const { aiMsg, history, memo } = await this.prepare(cmd);
 		const postProcess = this.postProcess;
+		const brainApp = this.brainApp;
 		const encoder = new TextEncoder();
 
 		return new ReadableStream({
@@ -49,32 +58,41 @@ export class ChatAppImpl implements ChatApp {
 
 					let content = '';
 
-					const stream = await grok.chat.completions.create({
-						model: LLMS.GROK_4_1_FAST_NON_REASONING,
-						stream: true,
-						messages: [...history, { role: 'user', content: cmd.query }],
-						stream_options: { include_usage: true }
+					const stream = await brainApp.runStream({
+						history,
+						memo,
+						profileId: cmd.principal.user.id,
+						chatId: cmd.chatId
 					});
 
-					for await (const chunk of stream) {
-						if (chunk.choices && chunk.choices.length > 0 && chunk.choices[0]?.delta) {
-							const text = chunk.choices[0].delta.content || '';
-							if (!text) continue;
-							content += text;
-							const msg: MessageChunk = {
-								text,
-								msgId: aiMsg.id
-							};
-							sendEvent('chunk', JSON.stringify(msg));
+					const reader = stream.getReader();
+
+					try {
+						while (true) {
+							const { done, value } = await reader.read();
+
+							if (done) {
+								break;
+							}
+
+							if (value) {
+								const chunk: MessageChunk = {
+									text: value,
+									msgId: aiMsg.id
+								};
+								content += value;
+								sendEvent('chunk', JSON.stringify(chunk));
+							}
 						}
+					} finally {
+						reader.releaseLock();
 					}
 
 					await postProcess(aiMsg.id, content);
 					sendEvent('done', '');
+					controller.close();
 				} catch (error) {
 					controller.error(error);
-				} finally {
-					controller.close();
 				}
 			}
 		});
@@ -99,6 +117,11 @@ export class ChatAppImpl implements ChatApp {
 			content: cmd.query,
 			status: MessagesStatusOptions.final
 		});
+		history.push({
+			role: 'user',
+			content: userMsg.content
+		});
+
 		const aiMsg = await pb.collection(Collections.Messages).create({
 			chat: cmd.chatId,
 			role: MessagesRoleOptions.ai,
@@ -106,7 +129,14 @@ export class ChatAppImpl implements ChatApp {
 			content: ''
 		});
 
-		return { userMsg, aiMsg, history };
+		const memo = await this.memoryApp.get({
+			profileId: cmd.principal.user.id,
+			query: cmd.query,
+			chatId: cmd.chatId,
+			tokens: INITIAL_MEMORY_TOKENS
+		});
+
+		return { aiMsg, history, memo };
 	}
 
 	private async postProcess(aiMsgId: string, content: string) {

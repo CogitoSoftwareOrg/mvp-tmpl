@@ -101,6 +101,6 @@
 
 	<p class="mt-4 text-center text-sm">
 		Don't have an account?
-		<a href="/app/auth/signup" class="link font-semibold link-primary">Create one</a>
+		<a href="/app/auth/sign-up" class="link font-semibold link-primary">Create one</a>
 	</p>
 </div>

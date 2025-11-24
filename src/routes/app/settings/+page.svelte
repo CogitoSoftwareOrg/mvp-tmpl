@@ -11,7 +11,7 @@
 
 	function logout() {
 		pb!.authStore.clear();
-		goto('/app/auth');
+		goto('/app/auth/sign-in');
 	}
 </script>
 

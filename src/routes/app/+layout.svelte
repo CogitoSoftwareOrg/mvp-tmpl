@@ -106,7 +106,7 @@
 				{#if sidebarOpen}
 					<a href="/app" class="flex items-center gap-2">
 						<div class="text-2xl font-bold text-primary"><Heart class="size-8 text-primary" /></div>
-						<span class="text-lg font-semibold">Cogito Software</span>
+						<span class="text-lg font-semibold">MVP Template</span>
 					</a>
 				{/if}
 				<button

@@ -52,11 +52,11 @@
 </script>
 
 <div class="flex h-full w-full">
-	<div class="h-full w-full py-4 flex gap-4 flex-3">
+	<div class="h-full w-full flex gap-4 flex-3">
 		{#if chat && messages}
 			<div class="flex flex-col h-full w-full">
 				<header
-					class="flex h-16 shrink-0 items-center justify-between border-b border-base-300 px-4"
+					class="hidden sm:flex h-12 shrink-0 items-center justify-between border-b border-base-300 px-4"
 				>
 					<div class="flex flex-1 items-center gap-2 overflow-hidden">
 						{#if isEditingTitle}

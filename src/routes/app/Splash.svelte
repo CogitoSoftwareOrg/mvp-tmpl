@@ -17,13 +17,15 @@
 
 			<!-- Heart icon wrapper with animation -->
 			<div class="animate-heartbeat relative">
-				<Heart class="h-28 w-28 fill-accent text-accent drop-shadow-lg" />
+				<span class="text-[5rem] text-primary font-bold">MVP</span>
 			</div>
 		</div>
 
 		<!-- Loading text with fade animation -->
-		<h1 class="animate-fade-in-up mt-10 text-4xl font-semibold text-base-content drop-shadow-sm">
-			Loading your story...
+		<h1
+			class="animate-fade-in-up mt-10 text-4xl font-semibold text-base-content drop-shadow-sm text-center"
+		>
+			Loading your app...
 		</h1>
 
 		<!-- Subtle loading dots with improved animation -->

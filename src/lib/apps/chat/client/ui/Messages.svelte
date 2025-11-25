@@ -46,7 +46,7 @@
 		{onscroll}
 		class={['flex h-full flex-col overflow-y-auto overscroll-contain scroll-smooth']}
 	>
-		<div class="mx-auto flex min-h-full w-full max-w-3xl flex-col space-y-6 px-4 pt-10 pb-4">
+		<div class="mx-auto flex min-h-full w-full max-w-4xl flex-col space-y-3 px-2 pt-10 pb-4">
 			{#if messages.length === 0}
 				<div class="flex flex-1 flex-col items-center justify-center text-center opacity-50">
 					<div class="filter mb-4 text-6xl grayscale">💬</div>

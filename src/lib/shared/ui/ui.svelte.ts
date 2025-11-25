@@ -5,6 +5,7 @@ const UIStateSchema = z.object({
 	paywallOpen: z.boolean().default(false),
 	authWallOpen: z.boolean().default(false),
 	globalSidebarOpen: z.boolean().default(true),
+	mobileSidebarOpen: z.boolean().default(false),
 	feedbackModalOpen: z.boolean().default(false),
 	emailVerifyWallOpen: z.boolean().default(false)
 });
@@ -20,6 +21,7 @@ class UIStore {
 	paywallOpen = $derived(this._state?.paywallOpen);
 	authWallOpen = $derived(this._state?.authWallOpen);
 	globalSidebarOpen = $derived(this._state?.globalSidebarOpen);
+	mobileSidebarOpen = $derived(this._state?.mobileSidebarOpen);
 	feedbackModalOpen = $derived(this._state?.feedbackModalOpen);
 
 	toggleEmailVerifyWallOpen() {
@@ -67,6 +69,16 @@ class UIStore {
 		if (!this._state) return;
 		this._state.globalSidebarOpen = open;
 		this.saveState();
+	}
+
+	// mobileSidebarOpen
+	toggleMobileSidebar() {
+		if (!this._state) return;
+		this._state.mobileSidebarOpen = !this._state.mobileSidebarOpen;
+	}
+	setMobileSidebarOpen(open: boolean) {
+		if (!this._state) return;
+		this._state.mobileSidebarOpen = open;
 	}
 
 	// feedbackModalOpen

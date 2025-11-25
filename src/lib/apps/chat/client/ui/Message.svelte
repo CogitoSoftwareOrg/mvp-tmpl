@@ -82,7 +82,7 @@
 		<!-- Bubble -->
 		<div
 			class={[
-				'relative prose overflow-hidden rounded-2xl px-5 py-3 text-base leading-relaxed shadow-sm transition-all',
+				'relative prose overflow-hidden rounded-2xl px-3 py-3 text-base leading-relaxed shadow-sm transition-all',
 				incoming
 					? 'rounded-tl-none bg-base-200 text-base-content'
 					: 'rounded-tr-none bg-primary text-primary-content',

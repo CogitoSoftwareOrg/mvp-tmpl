@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { afterNavigate, goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import {
@@ -14,7 +14,9 @@
 		Book,
 		MessageSquare,
 		Play,
-		TextAlignJustify
+		TextAlignJustify,
+		Menu,
+		X
 	} from 'lucide-svelte';
 
 	import { chatApi, chatsStore } from '$lib/apps/chat/client';
@@ -31,6 +33,7 @@
 	const user = $derived(userStore.user);
 	const sub = $derived(subStore.sub);
 	const sidebarOpen = $derived(uiStore.globalSidebarOpen);
+	const mobileSidebarOpen = $derived(uiStore.mobileSidebarOpen);
 
 	const chats = $derived(chatsStore.chats);
 
@@ -60,6 +63,11 @@
 		return () => subStore.unsubscribe();
 	});
 
+	// Close mobile sidebar on navigation
+	afterNavigate(() => {
+		uiStore.setMobileSidebarOpen(false);
+	});
+
 	function isActive(path: string) {
 		return page.url.pathname === path;
 	}
@@ -81,17 +89,192 @@
 
 		goto(`/app/chats/${emptyChat.id}`);
 	}
+
+	// Swipe gesture handling for mobile sidebar
+	let touchStartX = $state(0);
+	let touchCurrentX = $state(0);
+	let isSwiping = $state(false);
+	const SWIPE_THRESHOLD = 50;
+	const EDGE_WIDTH = 30;
+
+	function handleTouchStart(e: TouchEvent) {
+		const touch = e.touches[0];
+		touchStartX = touch.clientX;
+		touchCurrentX = touch.clientX;
+
+		// Only allow swipe from edge when sidebar is closed
+		if (!mobileSidebarOpen && touchStartX > EDGE_WIDTH) return;
+
+		isSwiping = true;
+	}
+
+	function handleTouchMove(e: TouchEvent) {
+		if (!isSwiping) return;
+		const touch = e.touches[0];
+		touchCurrentX = touch.clientX;
+	}
+
+	function handleTouchEnd() {
+		if (!isSwiping) return;
+
+		const deltaX = touchCurrentX - touchStartX;
+
+		if (!mobileSidebarOpen && deltaX > SWIPE_THRESHOLD) {
+			// Swipe right to open
+			uiStore.setMobileSidebarOpen(true);
+		} else if (mobileSidebarOpen && deltaX < -SWIPE_THRESHOLD) {
+			// Swipe left to close
+			uiStore.setMobileSidebarOpen(false);
+		}
+
+		isSwiping = false;
+		touchStartX = 0;
+		touchCurrentX = 0;
+	}
 </script>
 
 {#await globalPromise}
 	<Splash />
 {:then}
-	<div class="flex h-screen overflow-hidden bg-base-100">
-		<!-- Sidebar -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<div
+		class="flex h-screen flex-col overflow-hidden bg-base-100 md:flex-row"
+		ontouchstart={handleTouchStart}
+		ontouchmove={handleTouchMove}
+		ontouchend={handleTouchEnd}
+	>
+		<!-- Mobile Header -->
+		<header class="flex h-10 shrink-0 items-center border-b border-base-300 px-2 md:hidden">
+			<Button
+				color="neutral"
+				circle
+				size="sm"
+				onclick={() => uiStore.setMobileSidebarOpen(true)}
+				variant="ghost"
+			>
+				<Menu class="size-6" />
+			</Button>
+		</header>
+
+		{#if mobileSidebarOpen}
+			<!-- svelte-ignore a11y_no_static_element_interactions -->
+			<!-- svelte-ignore a11y_click_events_have_key_events -->
+			<div
+				class="fixed inset-0 z-40 bg-black/50 md:hidden"
+				onclick={() => uiStore.setMobileSidebarOpen(false)}
+			></div>
+		{/if}
+
+		<!-- Mobile Sidebar Drawer -->
 		<aside
 			class={[
-				'flex-col border-r border-base-300 transition-all duration-300 ease-in-out',
-				'hidden md:flex'
+				'fixed left-0 top-0 z-50 flex h-full w-72 flex-col border-r border-base-300 bg-base-100 transition-transform duration-300 ease-in-out md:hidden',
+				mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+			]}
+		>
+			<!-- Mobile Sidebar Header -->
+			<div class="flex h-14 items-center justify-between border-b border-base-300 px-4">
+				<a href="/app" class="flex items-center gap-2">
+					<Heart class="size-6 text-primary" />
+					<span class="font-semibold">MVP Template</span>
+				</a>
+				<button
+					onclick={() => uiStore.setMobileSidebarOpen(false)}
+					class="btn btn-square btn-ghost btn-sm"
+					aria-label="Close menu"
+				>
+					<X class="size-5" />
+				</button>
+			</div>
+
+			<!-- Mobile Sidebar Navigation -->
+			<nav class="flex flex-1 flex-col overflow-hidden">
+				<div class="shrink-0 px-3 pt-4">
+					<Button block class="rounded-xl" disabled={loading} onclick={handleNewChat}>
+						<Plus class="size-5" />
+						<span>New Chat</span>
+					</Button>
+				</div>
+
+				<div class="divider my-2"></div>
+
+				<div class="flex-1 overflow-y-auto px-2">
+					<ul class="menu w-full gap-1">
+						{#each chats as chat}
+							<li class="w-full">
+								<a
+									href={`/app/chats/${chat.id}`}
+									class={[
+										'btn flex w-full items-center justify-start gap-2 rounded-xl btn-ghost px-4 transition-all',
+										isActive(`/app/chats/${chat.id}`) ? 'btn-soft' : ''
+									]}
+								>
+									{chat.id.slice(0, 2)}.
+									<span class="truncate font-medium">{chat.title || chat.id}</span>
+								</a>
+							</li>
+						{/each}
+					</ul>
+				</div>
+			</nav>
+
+			<div class="divider my-1"></div>
+
+			{#if user}
+				<div class="mb-2 px-2">
+					<button
+						class="btn btn-block justify-start btn-ghost"
+						onclick={() => uiStore.toggleFeedbackModal()}
+					>
+						<MessageSquare class="size-5" />
+						Feedback
+					</button>
+				</div>
+			{/if}
+
+			<!-- Mobile Theme Controller -->
+			<div class="mb-2 px-2">
+				<ThemeController expanded navStyle />
+			</div>
+
+			<!-- Mobile Profile Card -->
+			<div class="border-t border-base-300">
+				{#if user}
+					<a
+						href="/app/settings"
+						class="flex items-center gap-3 p-3 transition-colors hover:bg-base-200"
+					>
+						{#if userStore.avatarUrl}
+							<img src={userStore.avatarUrl} alt={user.name} class="size-10 rounded-full" />
+						{:else}
+							<div class="flex size-10 items-center justify-center rounded-full bg-base-300">
+								{user.name?.at(0)?.toUpperCase() ?? 'U'}
+							</div>
+						{/if}
+						<div class="flex-1 overflow-hidden">
+							<div class="truncate text-sm font-semibold">{user.name || 'User'}</div>
+							<div class="truncate text-xs opacity-60">{user.email}</div>
+						</div>
+						<Settings class="size-5 opacity-60" />
+					</a>
+				{:else}
+					<a
+						href="/app/auth/sign-up"
+						class="flex items-center gap-3 p-3 transition-colors hover:bg-base-200"
+					>
+						<div class="size-10 rounded-full bg-base-300"></div>
+						<div class="flex-1">
+							<div class="text-sm font-semibold">Log in</div>
+						</div>
+					</a>
+				{/if}
+			</div>
+		</aside>
+
+		<!-- Desktop Sidebar -->
+		<aside
+			class={[
+				'hidden flex-col border-r border-base-300 transition-all duration-300 ease-in-out md:flex'
 			]}
 			class:w-64={sidebarOpen}
 			class:w-16={!sidebarOpen}
@@ -124,7 +307,7 @@
 
 			<!-- Navigation -->
 			<nav class="flex flex-1 flex-col overflow-hidden">
-				<div class="shrink-0 pt-4 px-2">
+				<div class="shrink-0 px-2 pt-4">
 					<Button
 						block
 						class="rounded-xl"
@@ -237,38 +420,11 @@
 		</aside>
 
 		<!-- Main Content -->
-		<main class="flex-1 pb-14 sm:pb-0">
+		<main class="flex-1 overflow-hidden">
 			<div class="mx-auto h-full max-w-7xl p-0 md:px-4 lg:px-6">
 				{@render children()}
 			</div>
 		</main>
-
-		<footer class="mobile-dock-footer dock dock-sm z-50 sm:hidden">
-			<a href="/app/chats" data-sveltekit-preload-data="tap" class="dock-item">
-				<TextAlignJustify
-					class={page.url.pathname === '/app/chats' ? 'text-primary' : 'text-neutral'}
-				/>
-			</a>
-
-			<div>
-				<Button circle disabled={loading} class="dock-item" onclick={handleNewChat}>
-					<Plus class="size-6" />
-				</Button>
-			</div>
-
-			<a
-				href={user ? '/app/settings' : '/app/auth/sign-up'}
-				data-sveltekit-preload-data="tap"
-				class="dock-item"
-			>
-				<Settings
-					class={page.url.pathname.startsWith('/app/settings') ||
-					page.url.pathname.startsWith('/app/auth')
-						? 'text-primary'
-						: 'text-neutral'}
-				/>
-			</a>
-		</footer>
 	</div>
 {/await}
 

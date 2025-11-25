@@ -1,8 +1,9 @@
 <script lang="ts">
+	import { MediaQuery } from 'svelte/reactivity';
 	import { page } from '$app/state';
 
 	import { messagesStore, ChatControlPanel } from '$lib/apps/chat/client';
-	import { uiStore, Sidebar } from '$lib/shared/ui';
+	import { uiStore, Sidebar, swipeable } from '$lib/shared/ui';
 
 	const { children } = $props();
 
@@ -19,28 +20,38 @@
 			messagesStore.unsubscribe();
 		};
 	});
+
+	const mobile = $derived(new MediaQuery('(max-width: 768px)'));
 </script>
 
-<div class="flex h-full w-full">
+<div
+	class="flex h-full w-full"
+	use:swipeable={{
+		isOpen: rightSidebarOpen ?? false,
+		direction: 'left',
+		edgeWidth: 30,
+		onOpen: () => uiStore.setRightSidebarOpen(true),
+		onClose: () => uiStore.setRightSidebarOpen(false)
+	}}
+>
 	<div class="h-full flex-1 overflow-hidden">
 		{@render children()}
 	</div>
 
-	<aside class="hidden w-64 shrink-0 border-l border-base-300 md:flex md:flex-col">
+	<!-- Desktop Right Sidebar (always visible on desktop) -->
+	<aside class="hidden w-84 shrink-0 border-l border-base-300 md:flex md:flex-col">
 		<ChatControlPanel />
 	</aside>
 
 	<!-- Mobile Right Sidebar Drawer -->
 	<Sidebar
-		open={rightSidebarOpen ?? false}
+		open={(mobile.current && rightSidebarOpen) ?? false}
 		position="right"
 		mobileWidth="w-72"
 		showToggle={false}
+		mobileOnly
 		onclose={() => uiStore.setRightSidebarOpen(false)}
 	>
-		{#snippet header({ expanded })}
-			<h2 class="text-lg font-semibold">Control Panel</h2>
-		{/snippet}
 		{#snippet children({ expanded })}
 			<ChatControlPanel compact />
 		{/snippet}

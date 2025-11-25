@@ -61,7 +61,7 @@
 	</div>
 
 	<!-- Message Content -->
-	<div class={['flex max-w-[85%] flex-col', incoming ? 'items-start' : 'items-end']}>
+	<div class={['flex max-w-full flex-col', incoming ? 'items-start' : 'items-end']}>
 		<!-- Header (Name) -->
 		{#if showHeader}
 			<div class="mb-1 flex items-center gap-2 px-1">

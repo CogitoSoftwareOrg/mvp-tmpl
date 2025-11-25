@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { X, ChevronLeft, ChevronRight } from 'lucide-svelte';
+	import type { ClassValue } from 'svelte/elements';
 
 	interface Props {
 		/** Whether the sidebar is open (mobile drawer mode) */
@@ -19,8 +20,10 @@
 		backdrop?: boolean;
 		/** Show expand/collapse toggle */
 		showToggle?: boolean;
+		/** Only render mobile version, skip desktop sidebar */
+		mobileOnly?: boolean;
 		/** Additional class for the sidebar */
-		class?: string;
+		class?: ClassValue;
 		/** Header content snippet */
 		header?: Snippet<[{ expanded: boolean }]>;
 		/** Main content snippet */
@@ -42,6 +45,7 @@
 		mobileWidth = 'w-72',
 		backdrop = true,
 		showToggle = true,
+		mobileOnly = false,
 		class: className = '',
 		header,
 		children,
@@ -106,50 +110,52 @@
 </aside>
 
 <!-- Desktop Sidebar -->
-<aside
-	class={[
-		'hidden flex-col border-base-300 transition-all duration-300 ease-in-out md:flex',
-		isLeft ? 'border-r' : 'border-l',
-		expanded ? expandedWidth : collapsedWidth,
-		className
-	]}
->
-	<!-- Desktop Header -->
-	{#if header || showToggle}
-		<div
-			class={[
-				'flex h-16 items-center border-b border-base-300 px-2',
-				expanded ? 'justify-between' : 'justify-center'
-			]}
-		>
-			{#if header && expanded}
-				{@render header({ expanded })}
-			{/if}
-			{#if showToggle}
-				<button onclick={ontoggle} class="btn btn-square btn-ghost" aria-label="Toggle sidebar">
-					{#if isLeft}
-						{#if expanded}
-							<ChevronLeft class="size-6" />
-						{:else}
+{#if !mobileOnly}
+	<aside
+		class={[
+			'hidden flex-col border-base-300 transition-all duration-300 ease-in-out md:flex',
+			isLeft ? 'border-r' : 'border-l',
+			expanded ? expandedWidth : collapsedWidth,
+			className
+		]}
+	>
+		<!-- Desktop Header -->
+		{#if header || showToggle}
+			<div
+				class={[
+					'flex h-16 items-center border-b border-base-300 px-2',
+					expanded ? 'justify-between' : 'justify-center'
+				]}
+			>
+				{#if header && expanded}
+					{@render header({ expanded })}
+				{/if}
+				{#if showToggle}
+					<button onclick={ontoggle} class="btn btn-square btn-ghost" aria-label="Toggle sidebar">
+						{#if isLeft}
+							{#if expanded}
+								<ChevronLeft class="size-6" />
+							{:else}
+								<ChevronRight class="size-6" />
+							{/if}
+						{:else if expanded}
 							<ChevronRight class="size-6" />
+						{:else}
+							<ChevronLeft class="size-6" />
 						{/if}
-					{:else if expanded}
-						<ChevronRight class="size-6" />
-					{:else}
-						<ChevronLeft class="size-6" />
-					{/if}
-				</button>
-			{/if}
-		</div>
-	{/if}
+					</button>
+				{/if}
+			</div>
+		{/if}
 
-	<!-- Desktop Content -->
-	<nav class="flex flex-1 flex-col overflow-hidden">
-		{@render children({ expanded })}
-	</nav>
+		<!-- Desktop Content -->
+		<nav class="flex flex-1 flex-col overflow-hidden">
+			{@render children({ expanded })}
+		</nav>
 
-	<!-- Desktop Footer -->
-	{#if footer}
-		{@render footer({ expanded })}
-	{/if}
-</aside>
+		<!-- Desktop Footer -->
+		{#if footer}
+			{@render footer({ expanded })}
+		{/if}
+	</aside>
+{/if}

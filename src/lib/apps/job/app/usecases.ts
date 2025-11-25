@@ -12,6 +12,8 @@ import {
 
 import type { JobApp } from '../core';
 
+const JOB_LOCK_TTL = 10 * 60 * 1000;
+
 export class JobAppImpl implements JobApp {
 	async shedule(
 		job: JobsResponse<unknown, JobExpand>
@@ -19,7 +21,11 @@ export class JobAppImpl implements JobApp {
 		const lastRun = job.expand?.lastRun;
 
 		if (lastRun?.attempt && lastRun.attempt >= job.maxAttempts) {
-			throw new Error('Max attempts reached');
+			await pb.collection(Collections.Jobs).update(job.id, {
+				enabled: null,
+				nextRun: null
+			});
+			throw new Error('Max attempts reached, job disabled');
 		}
 
 		const newRun: JobRunsResponse<unknown, JobRunsExpand> = await pb
@@ -33,6 +39,11 @@ export class JobAppImpl implements JobApp {
 				{ expand: 'job' }
 			);
 
+		await pb.collection(Collections.Jobs).update(job.id, {
+			lastRun: newRun.id,
+			locked: new Date(Date.now() + JOB_LOCK_TTL)
+		});
+
 		return newRun;
 	}
 
@@ -45,27 +56,6 @@ export class JobAppImpl implements JobApp {
 			await pb.collection(Collections.JobRuns).update(jobRun.id, {
 				status: JobRunsStatusOptions.running
 			});
-
-			// Update job
-			switch (job.type) {
-				case JobsTypeOptions.once: {
-					await pb.collection(Collections.Jobs).update(job.id, {
-						lastRun: jobRun.id
-					});
-					break;
-				}
-				case JobsTypeOptions.every: {
-					const delayMins = job.time ? parseInt(job.time) : 0;
-					await pb.collection(Collections.Jobs).update(job.id, {
-						lastRun: jobRun.id,
-						nextRun: new Date(Date.now() + delayMins * 60 * 1000)
-					});
-					break;
-				}
-				case JobsTypeOptions.cron: {
-					throw new Error('Cron jobs are not supported yet');
-				}
-			}
 
 			// Run task
 			let result: unknown;
@@ -85,11 +75,35 @@ export class JobAppImpl implements JobApp {
 				status: JobRunsStatusOptions.success,
 				result
 			});
+
+			// Update job
+			switch (job.type) {
+				case JobsTypeOptions.once: {
+					await pb.collection(Collections.Jobs).update(job.id, {
+						enabled: null
+					});
+					break;
+				}
+				case JobsTypeOptions.every: {
+					const delayMins = job.time ? parseInt(job.time) : 0;
+					await pb.collection(Collections.Jobs).update(job.id, {
+						nextRun: new Date(Date.now() + delayMins * 60 * 1000)
+					});
+					break;
+				}
+				case JobsTypeOptions.cron: {
+					throw new Error('Cron jobs are not supported yet');
+				}
+			}
 		} catch (error) {
 			console.error(error, 'Failed to run job!');
 			await pb.collection(Collections.JobRuns).update(jobRun.id, {
 				status: JobRunsStatusOptions.failed,
 				result: error instanceof Error ? error.message : 'Unknown error'
+			});
+		} finally {
+			await pb.collection(Collections.Jobs).update(job.id, {
+				locked: null
 			});
 		}
 	}

@@ -9,26 +9,37 @@ export function startWorker() {
 	console.log('Starting job worker...');
 	const di = getDI();
 
-	setInterval(async () => {
+	const tick = async () => {
 		console.log('Running job worker...');
-		await ensureAdminPb();
+		try {
+			await ensureAdminPb();
 
-		const jobs: JobsResponse<unknown, JobExpand>[] = await pb
-			.collection(Collections.Jobs)
-			.getFullList({
-				filter: 'enabled != null && nextRun <= @now',
-				expand: 'lastRun'
-			});
-		for (const job of jobs) {
-			try {
-				const jobRun = await di.job.shedule(job);
-				await di.job.run(jobRun);
-			} catch (error) {
-				console.error(error, 'Failed to schedule job!');
-				continue;
-			}
+			const jobs: JobsResponse<unknown, JobExpand>[] = await pb
+				.collection(Collections.Jobs)
+				.getFullList({
+					filter: 'enabled != null && nextRun <= @now && (locked = null || locked <= @now)',
+					expand: 'lastRun'
+				});
+
+			await Promise.all(
+				jobs.map(async (job) => {
+					try {
+						const jobRun = await di.job.shedule(job);
+						await di.job.run(jobRun);
+					} catch (error) {
+						console.error(error, 'Failed to schedule job!');
+					}
+				})
+			);
+		} catch (e) {
+			console.error(e, 'Worker tick failed');
+		} finally {
+			setTimeout(tick, JOB_RUN_INTERVAL);
 		}
-	}, JOB_RUN_INTERVAL);
+	};
+
+	// стартуем первый тик
+	void tick();
 }
 
 async function ensureAdminPb() {

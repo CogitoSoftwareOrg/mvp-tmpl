@@ -6,6 +6,7 @@ import { sequence } from '@sveltejs/kit/hooks';
 import { env } from '$env/dynamic/private';
 
 import { Collections, pb } from '$lib';
+import { startWorker } from '$lib/apps/job/worker';
 import { getDI } from '$lib/shared/server';
 
 const handleLogger: Handle = async ({ event, resolve }) => {
@@ -39,4 +40,5 @@ const handleUserAuth: Handle = async ({ event, resolve }) => {
 	return resolve(event);
 };
 
+startWorker();
 export const handle = sequence(handleLogger, handleAdminPocketbase, handleUserAuth);

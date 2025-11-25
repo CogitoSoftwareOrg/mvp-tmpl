@@ -15,7 +15,7 @@
 	}
 </script>
 
-<div class="mx-auto w-full max-w-7xl space-y-4 p-4 sm:space-y-0 sm:p-6 lg:p-4">
+<div class="mx-auto w-full max-w-7xl space-y-4 p-4 sm:space-y-0 sm:p-6 lg:p-4 overflow-y-auto">
 	<div class="mb-4 flex items-center justify-between sm:mb-6">
 		<h1 class="mx-auto text-2xl font-bold sm:text-3xl">Profile & Settings</h1>
 		<ThemeController />
@@ -28,8 +28,7 @@
 
 		<LegalCard />
 
-		<!-- Logout Button -->
-		<Button class="mt-4 w-full" onclick={logout} variant="soft" color="error">
+		<Button class="mt-2 w-full" onclick={logout} variant="soft" color="error">
 			<X class="mr-2 h-4 w-4" />
 			Logout
 		</Button>

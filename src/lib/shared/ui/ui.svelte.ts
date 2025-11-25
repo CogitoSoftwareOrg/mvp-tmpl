@@ -4,8 +4,9 @@ import { browser } from '$app/environment';
 const UIStateSchema = z.object({
 	paywallOpen: z.boolean().default(false),
 	authWallOpen: z.boolean().default(false),
-	globalSidebarOpen: z.boolean().default(true),
-	mobileSidebarOpen: z.boolean().default(false),
+	sidebarOpen: z.boolean().default(false),
+	sidebarExpanded: z.boolean().default(true),
+	rightSidebarOpen: z.boolean().default(false),
 	feedbackModalOpen: z.boolean().default(false),
 	emailVerifyWallOpen: z.boolean().default(false)
 });
@@ -20,9 +21,22 @@ class UIStore {
 	emailVerifyWallOpen = $derived(this._state?.emailVerifyWallOpen);
 	paywallOpen = $derived(this._state?.paywallOpen);
 	authWallOpen = $derived(this._state?.authWallOpen);
-	globalSidebarOpen = $derived(this._state?.globalSidebarOpen);
-	mobileSidebarOpen = $derived(this._state?.mobileSidebarOpen);
 	feedbackModalOpen = $derived(this._state?.feedbackModalOpen);
+
+	// Main sidebar (mobile drawer + desktop sidebar)
+	sidebarOpen = $derived(this._state?.sidebarOpen);
+	// Desktop sidebar expanded/collapsed state
+	sidebarExpanded = $derived(this._state?.sidebarExpanded);
+	// Right sidebar (for control panels etc.)
+	rightSidebarOpen = $derived(this._state?.rightSidebarOpen);
+
+	// Legacy aliases for backwards compatibility
+	get globalSidebarOpen() {
+		return this.sidebarExpanded;
+	}
+	get mobileSidebarOpen() {
+		return this.sidebarOpen;
+	}
 
 	toggleEmailVerifyWallOpen() {
 		if (!this._state) return;
@@ -59,26 +73,50 @@ class UIStore {
 		this.saveState();
 	}
 
-	// globalSidebarOpen
-	toggleGlobalSidebar() {
+	// sidebarOpen (mobile drawer state)
+	toggleSidebar() {
 		if (!this._state) return;
-		this._state.globalSidebarOpen = !this._state.globalSidebarOpen;
+		this._state.sidebarOpen = !this._state.sidebarOpen;
+	}
+	setSidebarOpen(open: boolean) {
+		if (!this._state) return;
+		this._state.sidebarOpen = open;
+	}
+
+	// sidebarExpanded (desktop expanded/collapsed state)
+	toggleSidebarExpanded() {
+		if (!this._state) return;
+		this._state.sidebarExpanded = !this._state.sidebarExpanded;
 		this.saveState();
 	}
-	setGlobalSidebarOpen(open: boolean) {
+	setSidebarExpanded(expanded: boolean) {
 		if (!this._state) return;
-		this._state.globalSidebarOpen = open;
+		this._state.sidebarExpanded = expanded;
 		this.saveState();
 	}
 
-	// mobileSidebarOpen
-	toggleMobileSidebar() {
+	// rightSidebarOpen
+	toggleRightSidebar() {
 		if (!this._state) return;
-		this._state.mobileSidebarOpen = !this._state.mobileSidebarOpen;
+		this._state.rightSidebarOpen = !this._state.rightSidebarOpen;
+	}
+	setRightSidebarOpen(open: boolean) {
+		if (!this._state) return;
+		this._state.rightSidebarOpen = open;
+	}
+
+	// Legacy methods for backwards compatibility
+	toggleGlobalSidebar() {
+		this.toggleSidebarExpanded();
+	}
+	setGlobalSidebarOpen(open: boolean) {
+		this.setSidebarExpanded(open);
+	}
+	toggleMobileSidebar() {
+		this.toggleSidebar();
 	}
 	setMobileSidebarOpen(open: boolean) {
-		if (!this._state) return;
-		this._state.mobileSidebarOpen = open;
+		this.setSidebarOpen(open);
 	}
 
 	// feedbackModalOpen

@@ -51,74 +51,59 @@
 	}
 </script>
 
-<div class="flex h-full w-full">
-	<div class="h-full w-full flex gap-4 flex-3">
-		{#if chat && messages}
-			<div class="flex flex-col h-full w-full">
-				<header
-					class="hidden sm:flex h-12 shrink-0 items-center justify-between border-b border-base-300 px-4"
-				>
-					<div class="flex flex-1 items-center gap-2 overflow-hidden">
-						{#if isEditingTitle}
-							<form
-								onsubmit={(e) => {
-									e.preventDefault();
-									saveTitle();
-								}}
-								class="flex w-full max-w-md items-center gap-2"
-							>
-								<input
-									type="text"
-									class="input input-sm input-bordered w-full"
-									bind:value={newTitle}
-								/>
-								<Button circle size="sm" color="success" type="submit">
-									<Check size={16} />
-								</Button>
-								<Button circle size="sm" variant="ghost" onclick={cancelEdit}>
-									<X size={16} />
-								</Button>
-							</form>
-						{:else}
-							<h1 class="truncate text-lg font-bold">{chat.title || 'New Chat'}</h1>
-							<Button
-								circle
-								size="sm"
-								variant="ghost"
-								class="transition-opacity hover:bg-base-200"
-								onclick={() => {
-									isEditingTitle = true;
-									newTitle = chat.title || '';
-								}}
-							>
-								<Pencil size={14} class="text-base-content/70" />
-							</Button>
-						{/if}
-					</div>
-				</header>
-
-				<!-- Messages Area -->
-				<div class="flex-1 overflow-hidden">
-					<Messages class="h-full" {messages} userSender={userStore.sender} {aiSender} />
-				</div>
-
-				<!-- Footer / Input -->
-				<footer class="shrink-0 border-t border-base-300 bg-base-100 p-4 pb-6">
-					<MessageControls {messages} onSend={handleSend} />
-				</footer>
+{#if chat && messages}
+	<div class="flex h-full w-full flex-col">
+		<!-- Desktop Header with title editing -->
+		<header
+			class="hidden h-12 shrink-0 items-center justify-between border-b border-base-300 px-4 sm:flex"
+		>
+			<div class="flex flex-1 items-center gap-2 overflow-hidden">
+				{#if isEditingTitle}
+					<form
+						onsubmit={(e) => {
+							e.preventDefault();
+							saveTitle();
+						}}
+						class="flex w-full max-w-md items-center gap-2"
+					>
+						<input type="text" class="input input-sm input-bordered w-full" bind:value={newTitle} />
+						<Button circle size="sm" color="success" type="submit">
+							<Check size={16} />
+						</Button>
+						<Button circle size="sm" variant="ghost" onclick={cancelEdit}>
+							<X size={16} />
+						</Button>
+					</form>
+				{:else}
+					<h1 class="truncate text-lg font-bold">{chat.title || 'New Chat'}</h1>
+					<Button
+						circle
+						size="sm"
+						variant="ghost"
+						class="transition-opacity hover:bg-base-200"
+						onclick={() => {
+							isEditingTitle = true;
+							newTitle = chat.title || '';
+						}}
+					>
+						<Pencil size={14} class="text-base-content/70" />
+					</Button>
+				{/if}
 			</div>
-		{:else}
-			<div class="flex h-full items-center justify-center">
-				<span class="loading loading-spinner loading-lg text-primary"></span>
-			</div>
-		{/if}
-	</div>
+		</header>
 
-	<aside class="flex-2 w-64 border-l border-base-300 hidden md:flex flex-col">
-		<div class="card">
-			<div class="card-body">
-				<h2 class="card-title">Control Panel and Widgets</h2>
-			</div>
+		<!-- Messages Area -->
+		<div class="flex-1 overflow-hidden">
+			<Messages class="h-full" {messages} userSender={userStore.sender} {aiSender} />
 		</div>
-	</aside>
-</div>
+
+		<!-- Footer / Input -->
+		<footer class="shrink-0 border-t border-base-300 bg-base-100 p-2">
+			<MessageControls {messages} onSend={handleSend} />
+		</footer>
+	</div>
+{:else}
+	<div class="flex h-full items-center justify-center">
+		<span class="loading loading-spinner loading-lg text-primary"></span>
+	</div>
+{/if}

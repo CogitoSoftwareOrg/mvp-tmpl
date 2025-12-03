@@ -6,14 +6,20 @@ export async function globalUserLoad() {
 		return { user: null, sub: null, chats: [] };
 	}
 
-	const res = await pb.collection(Collections.Users).authRefresh({ expand: 'subs_via_user' });
-	const user = res.record as UsersResponse<UserExpand>;
-	const sub = user.expand?.subs_via_user?.at(0) ?? null;
+	try {
+		const res = await pb.collection(Collections.Users).authRefresh({ expand: 'subs_via_user' });
+		const user = res.record as UsersResponse<UserExpand>;
+		const sub = user.expand?.subs_via_user?.at(0) ?? null;
 
-	const chats = await pb.collection(Collections.Chats).getFullList({
-		filter: `user = "${user.id}"`,
-		sort: '-created'
-	});
+		const chats = await pb.collection(Collections.Chats).getFullList({
+			filter: `user = "${user.id}"`,
+			sort: '-created'
+		});
 
-	return { user, sub, chats };
+		return { user, sub, chats };
+	} catch (error) {
+		console.error(error);
+		pb.authStore.clear();
+		return { user: null, sub: null, chats: [] };
+	}
 }

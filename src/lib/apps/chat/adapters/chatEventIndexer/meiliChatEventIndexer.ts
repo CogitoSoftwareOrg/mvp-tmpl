@@ -1,90 +1,78 @@
+import { EMBEDDERS, voyage } from '$lib/shared/server';
+import { building } from '$app/environment';
 import { type Index, MeiliSearch, type UserProvidedEmbedder } from 'meilisearch';
 import { env } from '$env/dynamic/private';
 
 import { nanoid } from '$lib/shared';
-import { EMBEDDERS, voyage } from '$lib/shared/server';
 
-import type { ProfileMemory, ProfileIndexer, ProfileType, Importance } from '../../core';
-import { building } from '$app/environment';
+import type { ChatEventMemory, ChatEventIndexer, EventType, Importance } from '../../core';
 
 const BATCH_SIZE = 128;
-
-const VOYAGE_EMBEDDER = 'voyage';
 const OUTPUT_DIMENSION = 1024;
+const VOYAGE_EMBEDDER = 'voyage';
 const SEARCH_RATIO = 0.75;
 const CHUNK_TOKEN_LIMIT = 256;
 
-export type ProfileDoc = {
+type ChatEventDoc = {
 	id: string;
-	type: ProfileType;
-	profileIds: string[];
+	type: EventType;
 	content: string;
+	chatId: string;
 	createdAt: string;
 	tokens: number;
 	importance: Importance;
-	profilesCount: number;
 	_vectors: Record<string, number[]>;
 };
 
-export const PROFILE_EMBEDDERS = {
+export const EVENT_EMBEDDERS = {
 	[VOYAGE_EMBEDDER]: {
 		source: 'userProvided',
 		dimensions: OUTPUT_DIMENSION
 	} as UserProvidedEmbedder
 };
 
-export class MeiliProfileIndexer implements ProfileIndexer {
+export class MeiliChatEventIndexer implements ChatEventIndexer {
 	private readonly client?: MeiliSearch;
-	private readonly index?: Index<ProfileDoc>;
+	private readonly index?: Index<ChatEventDoc>;
 
 	constructor() {
 		if (building) return;
+
 		this.client = new MeiliSearch({
 			host: env.MEILI_URL,
 			apiKey: env.MEILI_MASTER_KEY
 		});
-		this.index = this.client.index('profiles');
+		this.index = this.client.index('chatEventMemories');
 	}
 
 	async migrate(): Promise<void> {
 		if (!this.index) return;
-		await this.index.updateEmbedders(PROFILE_EMBEDDERS);
-		await this.index.updateFilterableAttributes([
-			'type',
-			'profileIds',
-			'createdAt',
-			'importance',
-			'profilesCount'
-		]);
+		await this.index.updateEmbedders(EVENT_EMBEDDERS);
+		await this.index.updateFilterableAttributes(['type', 'chatId', 'createdAt', 'importance']);
 	}
 
-	async add(memories: ProfileMemory[]): Promise<void> {
+	async add(memories: ChatEventMemory[]): Promise<void> {
 		if (!this.index) return;
 		if (memories.length === 0) {
-			console.log('No profile memories to index');
+			console.log('No chat event memories to index');
 			return;
 		}
 
-		const docs: ProfileDoc[] = [];
-
+		const docs: ChatEventDoc[] = [];
 		const validMemories = memories.filter((memory) => {
 			if (memory.tokens > CHUNK_TOKEN_LIMIT) {
-				console.warn('Profile memory tokens are too high', memory);
-				return false;
-			}
-			if (!memory.profileId) {
-				console.warn('Profile ID is not valid', memory);
+				console.warn('Chat event memory tokens are too high', memory);
 				return false;
 			}
 			return true;
 		});
 
 		if (validMemories.length === 0) {
-			console.warn('No valid profile memories after filtering');
+			console.warn('No valid chat event memories after filtering');
 			return;
 		}
 
-		console.log(`Indexing ${validMemories.length} profile memories`);
+		console.log(`Indexing ${validMemories.length} event memories`);
 
 		const embedTasks = [];
 		for (let i = 0; i < validMemories.length; i += BATCH_SIZE) {
@@ -110,16 +98,15 @@ export class MeiliProfileIndexer implements ProfileIndexer {
 				continue;
 			}
 
-			const id = `${memory.type}-${memory.profileId}-${nanoid()}`;
-			const doc: ProfileDoc = {
+			const id = `${memory.type}-${memory.chatId}-${nanoid()}`;
+			const doc: ChatEventDoc = {
 				id,
 				type: memory.type,
-				profileIds: [memory.profileId],
+				chatId: memory.chatId,
 				content: memory.content,
-				tokens: memory.tokens,
 				importance: memory.importance,
-				profilesCount: 1,
 				createdAt: new Date().toISOString(),
+				tokens: memory.tokens,
 				_vectors: {
 					[VOYAGE_EMBEDDER]: embedding
 				}
@@ -133,20 +120,29 @@ export class MeiliProfileIndexer implements ProfileIndexer {
 		}
 
 		try {
-			const task = await this.index.addDocuments(docs, { primaryKey: 'id' });
-			console.log(
-				`Successfully indexed ${docs.length} profile documents. Task ID: ${task.taskUid}`
-			);
+			const task = await this.index!.addDocuments(docs, { primaryKey: 'id' });
+			console.log(`Successfully indexed ${docs.length} event documents. Task ID: ${task.taskUid}`);
 		} catch (error) {
-			console.error('Error indexing profile documents:', error);
+			console.error('Error indexing event documents:', error);
 			throw error;
 		}
 	}
 
-	async search(query: string, tokens: number, profileId: string): Promise<ProfileMemory[]> {
+	async search(
+		query: string,
+		tokens: number,
+		chatId: string,
+		days?: number,
+		type?: EventType
+	): Promise<ChatEventMemory[]> {
 		const limit = Math.floor(tokens / CHUNK_TOKEN_LIMIT);
 
-		const f = this.buildProfilesFilter([profileId]);
+		let f = `chatId = "${chatId}"`;
+		if (type) f += ` AND type = "${type}"`;
+		if (days) {
+			const start = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+			f += ` AND createdAt >= "${start.toISOString()}"`;
+		}
 
 		const vector = (
 			await voyage.embed({
@@ -171,40 +167,15 @@ export class MeiliProfileIndexer implements ProfileIndexer {
 			}
 		});
 
-		const memories: ProfileMemory[] = res.hits.map((hit) => ({
-			kind: 'profile',
+		const memories: ChatEventMemory[] = res.hits.map((hit) => ({
+			kind: 'event',
 			type: hit.type,
-			profileId: hit.profileIds[0],
+			chatId: hit.chatId,
 			content: hit.content,
 			createdAt: hit.createdAt,
 			tokens: hit.tokens,
 			importance: hit.importance
 		}));
 		return memories;
-	}
-
-	private buildProfilesFilter(profileIds: string[]): string {
-		if (profileIds.length === 0) return '';
-
-		const personalFilter = `(profilesCount = 1 AND profileIds IN ["${profileIds.join('","')}"])`;
-
-		const pairFilters: string[] = [];
-
-		for (let i = 0; i < profileIds.length; i++) {
-			for (let j = i + 1; j < profileIds.length; j++) {
-				const a = profileIds[i];
-				const b = profileIds[j];
-
-				pairFilters.push(
-					`(profilesCount = 2 AND profileIds IN ["${a}"] AND profileIds IN ["${b}"])`
-				);
-			}
-		}
-
-		if (pairFilters.length === 0) {
-			return personalFilter;
-		}
-
-		return `${personalFilter} OR ${pairFilters.join(' OR ')}`;
 	}
 }

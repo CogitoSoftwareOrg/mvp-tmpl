@@ -1,5 +1,3 @@
-import type { BrainApp } from '$lib/apps/brain/core';
-import type { MemoryApp } from '$lib/apps/memory/core';
 import {
 	Collections,
 	MessagesRoleOptions,
@@ -7,143 +5,101 @@ import {
 	pb,
 	type ChatExpand,
 	type ChatsResponse,
-	ChatsStatusOptions
+	ChatsStatusOptions,
+	type Update
 } from '$lib/shared';
-import { LLMS, TOKENIZERS } from '$lib/shared/server';
+import { LLMS, TOKENIZERS, type Agent } from '$lib/shared/server';
+import { getActiveTraceId } from '@langfuse/tracing';
 
 import {
 	Chat,
 	type ChatApp,
-	type MessageChunk,
+	type ChatEventIndexer,
+	type ChatEventMemoryPutCmd,
+	type ChatEventMemory,
+	type ChatEventMemoryGetCmd,
 	type OpenAIMessage,
-	type SendUserMessageCmd
+	type UtilsMode
 } from '../core';
-
-const HISTORY_TOKENS = 2000;
-const INITIAL_MEMORY_TOKENS = 1000;
 
 export class ChatAppImpl implements ChatApp {
 	constructor(
-		private readonly brainApp: BrainApp,
-		private readonly memoryApp: MemoryApp
+		private readonly agents: Record<UtilsMode, Agent>,
+		private readonly chatEventIndexer: ChatEventIndexer
 	) {}
 
-	async run(cmd: SendUserMessageCmd): Promise<string> {
-		const { aiMsg, history, memo } = await this.prepare(cmd);
-
-		const content = await this.brainApp.run({
-			history,
-			memo,
-			profileId: cmd.principal.user.id,
-			chatId: cmd.chatId
-		});
-
-		await this.postProcess(aiMsg.id, content);
-		return aiMsg.content || '';
+	async getMemories(cmd: ChatEventMemoryGetCmd): Promise<ChatEventMemory[]> {
+		return this.chatEventIndexer.search(cmd.query, cmd.tokens, cmd.chatId);
 	}
 
-	async runStream(cmd: SendUserMessageCmd): Promise<ReadableStream> {
-		const { aiMsg, history, memo } = await this.prepare(cmd);
-		const postProcess = this.postProcess;
-		const brainApp = this.brainApp;
-		const encoder = new TextEncoder();
-
-		return new ReadableStream({
-			async start(controller) {
-				try {
-					const sendEvent = (event: string, data: string) => {
-						controller.enqueue(encoder.encode(`event: ${event}\n`));
-						controller.enqueue(encoder.encode(`data: ${data}\n\n`));
-					};
-
-					let content = '';
-
-					const stream = await brainApp.runStream({
-						history,
-						memo,
-						profileId: cmd.principal.user.id,
-						chatId: cmd.chatId
-					});
-
-					const reader = stream.getReader();
-
-					try {
-						while (true) {
-							const { done, value } = await reader.read();
-
-							if (done) {
-								break;
-							}
-
-							if (value) {
-								const chunk: MessageChunk = {
-									text: value,
-									msgId: aiMsg.id
-								};
-								content += value;
-								sendEvent('chunk', JSON.stringify(chunk));
-							}
-						}
-					} finally {
-						reader.releaseLock();
-					}
-
-					await postProcess(aiMsg.id, content);
-					sendEvent('done', '');
-					controller.close();
-				} catch (error) {
-					controller.error(error);
-				}
-			}
-		});
+	async putMemories(cmd: ChatEventMemoryPutCmd): Promise<void> {
+		const memories: ChatEventMemory[] = cmd.dtos.map((dto) => ({
+			type: dto.type,
+			chatId: dto.chatId,
+			content: dto.content,
+			importance: dto.importance,
+			tokens: TOKENIZERS[LLMS.GROK_4_FAST].encode(dto.content).length
+		}));
+		await this.chatEventIndexer.add(memories);
 	}
+	async prepareMessages(chatId: string, query: string) {
+		const traceId = getActiveTraceId();
 
-	private async prepare(cmd: SendUserMessageCmd) {
-		const chatRec: ChatsResponse<ChatExpand> = await pb
-			.collection(Collections.Chats)
-			.getOne(cmd.chatId, { expand: 'messages_via_chat' });
-		const chat = Chat.fromResponse(chatRec);
-		const history = this.trimMessages(chat, HISTORY_TOKENS);
+		const chat = await this.getChat(chatId);
 
 		if (chat.data.status === ChatsStatusOptions.empty) {
-			await pb.collection(Collections.Chats).update(cmd.chatId, {
+			this.nameChat(chatId, query);
+
+			await pb.collection(Collections.Chats).update(chatId, {
 				status: ChatsStatusOptions.going
 			});
 		}
 
 		const userMsg = await pb.collection(Collections.Messages).create({
-			chat: cmd.chatId,
+			chat: chatId,
 			role: MessagesRoleOptions.user,
-			content: cmd.query,
-			status: MessagesStatusOptions.final
-		});
-		history.push({
-			role: 'user',
-			content: userMsg.content
+			content: query,
+			status: MessagesStatusOptions.final,
+			metadata: {
+				traceId
+			}
 		});
 
 		const aiMsg = await pb.collection(Collections.Messages).create({
-			chat: cmd.chatId,
+			chat: chatId,
 			role: MessagesRoleOptions.ai,
 			status: MessagesStatusOptions.streaming,
-			content: ''
+			content: '',
+			metadata: {
+				traceId
+			}
 		});
 
-		const memo = await this.memoryApp.get({
-			profileId: cmd.principal.user.id,
-			query: cmd.query,
-			chatId: cmd.chatId,
-			tokens: INITIAL_MEMORY_TOKENS
-		});
-
-		return { aiMsg, history, memo };
+		return { aiMsg, userMsg };
 	}
 
-	private async postProcess(aiMsgId: string, content: string) {
+	async postProcessMessage(aiMsgId: string, content: string) {
 		await pb.collection(Collections.Messages).update(aiMsgId, {
 			content,
 			status: MessagesStatusOptions.final
 		});
+	}
+
+	async getHistory(chatId: string, tokens: number): Promise<OpenAIMessage[]> {
+		const chat = await this.getChat(chatId);
+		return this.trimMessages(chat, tokens);
+	}
+
+	async update(chatId: string, dto: Update<Collections.Chats>): Promise<Chat> {
+		await pb.collection(Collections.Chats).update(chatId, dto);
+		return this.getChat(chatId);
+	}
+
+	private async getChat(chatId: string): Promise<Chat> {
+		const chatRec: ChatsResponse<ChatExpand> = await pb
+			.collection(Collections.Chats)
+			.getOne(chatId, { expand: 'messages_via_chat' });
+		return Chat.fromResponse(chatRec);
 	}
 
 	private trimMessages(chat: Chat, tokens: number): OpenAIMessage[] {
@@ -166,5 +122,18 @@ export class ChatAppImpl implements ChatApp {
 
 		messages.reverse();
 		return messages;
+	}
+
+	private async nameChat(chatId: string, query: string): Promise<void> {
+		const name = await this.agents['name'].run({
+			history: [{ role: 'user', content: query }],
+			knowledge: '',
+			tools: [],
+			dynamicArgs: {}
+		});
+
+		await pb.collection(Collections.Chats).update(chatId, {
+			title: name
+		});
 	}
 }

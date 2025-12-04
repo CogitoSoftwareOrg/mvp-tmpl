@@ -1,129 +1,164 @@
-import type {
-	EventType,
-	Importance,
-	MemoryApp,
-	MemoryGetCmd,
-	MemoryPutCmd,
-	ProfileType
-} from '$lib/apps/memory/core';
+import z from 'zod';
 
-import type { BrainApp, BrainRunCmd, Planner, Synthesizer } from '../core';
+import type { MessagesResponse } from '$lib/shared';
+import type { Agent, Tool } from '$lib/shared/server';
+import type { ChatApp, OpenAIMessage } from '$lib/apps/chat/core';
+import type { UserApp } from '$lib/apps/user/core';
 
-const ADDITIONAL_MEMORY_TOKENS = 1000;
+import type { BrainApp, BrainRunCmd, Mode } from '../core';
+import { SaveMemoriesToolSchema, SaveMemoriesArgs } from '../core/tools';
+
+const HISTORY_TOKENS = 2000;
+const USER_MEMORY_TOKENS = 5000;
+const CHAT_EVENT_MEMORY_TOKENS = 5000;
+// const ARTIFCAT_MEMORY_TOKENS = 5000;
 
 export class BrainAppImpl implements BrainApp {
+	private tools: Tool[] = [];
+
 	constructor(
-		private readonly planner: Planner,
-		private readonly synthesizer: Synthesizer,
-		private readonly memoryApp: MemoryApp
-	) {}
-
-	async run(cmd: BrainRunCmd): Promise<string> {
-		const { history, memo } = await this.prepare(cmd);
-		return await this.synthesizer.synthesize(history, memo);
-	}
-
-	async runStream(cmd: BrainRunCmd): Promise<ReadableStream> {
-		const { history, memo } = await this.prepare(cmd);
-		return await this.synthesizer.synthesizeStream(history, memo);
-	}
-
-	private async prepare(cmd: BrainRunCmd) {
-		console.log('Brain.prepare started');
-		const { history, memo } = cmd;
-
-		const toolCalls = await this.planner.plan(history, memo, [
-			this.memoryApp.searchTool,
-			this.memoryApp.putTool
-		]);
-
-		console.log(`Planner returned ${toolCalls.length} tool calls`);
-
-		if (toolCalls.length > 0) {
-			history.push({
-				role: 'assistant',
-				content: '',
-				tool_calls: toolCalls.map((tc) => ({
-					id: tc.id,
-					type: 'function',
-					function: {
-						name: tc.name,
-						arguments: tc.args ? JSON.stringify(tc.args) : '{}'
-					}
-				}))
-			});
-		}
-
-		for (const toolCall of toolCalls) {
-			console.log(`Executing tool: ${toolCall.name}`);
-			if (toolCall.name === this.memoryApp.searchTool.function.name) {
-				console.log(`Memory search tool called with query: ${toolCall.args.query}`);
-				const dto: MemoryGetCmd = {
-					query: toolCall.args.query as string,
-					tokens: ADDITIONAL_MEMORY_TOKENS,
-					profileId: cmd.profileId,
-					chatId: cmd.chatId
-				};
-				const result = await this.memoryApp.get(dto);
-
-				console.log(
-					`Memory search result: ${result.event?.length || 0} events, ${result.profile?.length || 0} profiles`
-				);
-
-				// Append new memories to the current memo object (mutating the original object)
-				if (result.event && result.event.length > 0) {
-					memo.event.push(...result.event);
-					console.log(
-						`Added ${result.event.length} events to memo. Total events: ${memo.event.length}`
-					);
-				}
-				if (result.profile && result.profile.length > 0) {
-					memo.profile.push(...result.profile);
-					console.log(
-						`Added ${result.profile.length} profiles to memo. Total profiles: ${memo.profile.length}`
-					);
-				}
-
-				history.push({
-					role: 'tool',
-					content: 'Memory searched!',
-					tool_call_id: toolCall.id
-				});
-			} else if (toolCall.name === this.memoryApp.putTool.function.name) {
-				console.log(
-					`Memory put tool called with profiles: ${JSON.stringify(toolCall.args.profiles)}`
-				);
-				const dto: MemoryPutCmd = {
-					profiles: (
-						toolCall.args.profiles as {
-							type: ProfileType;
-							importance: Importance;
-							content: string;
-						}[]
-					).map((profile) => ({
-						profileId: cmd.profileId,
-						...profile
-					})),
-					events: (
-						toolCall.args.events as { type: EventType; importance: Importance; content: string }[]
-					).map((event) => ({
-						chatId: cmd.chatId,
-						...event
-					}))
-				};
-				await this.memoryApp.put(dto);
-				history.push({
-					role: 'tool',
-					content: 'Memory saved successfully!',
-					tool_call_id: toolCall.id
-				});
+		private readonly agents: Record<Mode, Agent>,
+		private readonly chatApp: ChatApp,
+		private readonly userApp: UserApp
+	) {
+		const saveMemoriesTool: Tool = {
+			// @ts-expect-error - not typed
+			schema: SaveMemoriesToolSchema,
+			// @ts-expect-error - not typed
+			callback: async (
+				args: z.infer<typeof SaveMemoriesArgs> & { userId: string; chatId: string }
+			) => {
+				const { userMemories, chatEventMemories } = args;
+				await Promise.all([
+					this.userApp.putMemories({
+						dtos: userMemories.map((user) => ({
+							userId: args.userId,
+							content: user.content,
+							importance: user.importance
+						}))
+					}),
+					this.chatApp.putMemories({
+						dtos: chatEventMemories.map((chatEvent) => ({
+							chatId: args.chatId,
+							content: chatEvent.content,
+							importance: chatEvent.importance,
+							type: chatEvent.type
+						}))
+					})
+				]);
 			}
+		};
+
+		this.tools.push(saveMemoriesTool);
+	}
+
+	async ask(cmd: BrainRunCmd): Promise<string> {
+		const { chatId, userId, query } = cmd;
+		const { history, aiMsg, knowledge } = await this.prepare(chatId, userId, query);
+		const agent = this.agents['simple'];
+		const result = await agent.run({
+			history,
+			dynamicArgs: {},
+			tools: this.tools,
+			knowledge
+		});
+		await this.chatApp.postProcessMessage(aiMsg.id, result);
+		return result;
+	}
+
+	async askStream(cmd: BrainRunCmd): Promise<ReadableStream> {
+		const { chatId, userId, query } = cmd;
+		const { history, aiMsg, knowledge } = await this.prepare(chatId, userId, query);
+
+		const agent = this.agents['simple'];
+		const chatApp = this.chatApp;
+		const tools = this.tools;
+
+		return new ReadableStream({
+			async start(controller) {
+				try {
+					let content = '';
+					const stream = await agent.runStream({
+						tools,
+						history: history,
+						knowledge,
+						dynamicArgs: {
+							userId: cmd.userId,
+							chatId: cmd.chatId
+						}
+					});
+					const reader = stream.getReader();
+					while (true) {
+						const { value, done } = await reader.read();
+						if (done) break;
+						content += value;
+						controller.enqueue(JSON.stringify({ text: value, msgId: aiMsg!.id }));
+					}
+					await chatApp.postProcessMessage(aiMsg!.id, content);
+				} catch (error) {
+					controller.error(error);
+				} finally {
+					controller.close();
+				}
+			}
+		});
+	}
+
+	// PRIVATE UTILS
+	async prepare(
+		chatId: string,
+		userId: string,
+		query: string
+	): Promise<{
+		history: OpenAIMessage[];
+		aiMsg: MessagesResponse;
+		userMsg: MessagesResponse;
+		knowledge: string;
+	}> {
+		const { aiMsg, userMsg } = await this.chatApp.prepareMessages(chatId, query);
+
+		const knowledge = await this.buildKnowledge(userId, chatId, query);
+
+		const history = await this.chatApp.getHistory(chatId, HISTORY_TOKENS);
+
+		return { history, aiMsg, userMsg, knowledge };
+	}
+
+	async buildKnowledge(userId: string, chatId: string, query: string): Promise<string> {
+		let knowledge = '';
+
+		console.log('userMemories', userId, query.slice(0, 50));
+		const userMemories = await this.userApp.getMemories({
+			userId: userId,
+			query: query,
+			tokens: USER_MEMORY_TOKENS
+		});
+		if (userMemories.length > 0) {
+			knowledge += '\n\nUser memories:';
+			knowledge += userMemories.map((user) => `- ${user.content}`).join('\n');
 		}
 
-		console.log(
-			`Brain.prepare completed. Final memo: ${memo.event.length} events, ${memo.profile.length} profiles, ${memo.static.length} static`
-		);
+		console.log('chatEventMemories', chatId, query.slice(0, 50));
+		const chatEventMemories = await this.chatApp.getMemories({
+			chatId: chatId,
+			query: query,
+			tokens: CHAT_EVENT_MEMORY_TOKENS
+		});
+		if (chatEventMemories.length > 0) {
+			knowledge += '\n\nChat event memories:';
+			knowledge += chatEventMemories.map((chatEvent) => `- ${chatEvent.content}`).join('\n');
+		}
 
-		return { history, memo };
+		// const artifactMemories = await this.artifactApp.getMemories({
+		// 	userId: userId,
+		// 	query: query,
+		// 	tokens: ARTIFCAT_MEMORY_TOKENS
+		// });
+		// if (artifactMemories.length > 0) {
+		// 	knowledge += '\n\nArtifact memories:';
+		// 	knowledge += artifactMemories.map((artifact) => `- ${artifact.data.payload}`).join('\n');
+		// }
+
+		return knowledge;
 	}
 }

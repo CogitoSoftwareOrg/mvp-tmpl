@@ -1,8 +1,8 @@
 import type { UserApp } from '$lib/apps/user/core';
-import type { ChatApp } from '$lib/apps/chat/core';
+import type { BrainApp } from '$lib/apps/brain/core';
 
 import { EdgeAppImpl } from './app';
 
-export const getEdgeApp = (userApp: UserApp, chatApp: ChatApp) => {
-	return new EdgeAppImpl(userApp, chatApp);
+export const getEdgeApp = (userApp: UserApp, brainApp: BrainApp) => {
+	return new EdgeAppImpl(userApp, brainApp);
 };

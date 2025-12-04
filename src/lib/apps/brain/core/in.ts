@@ -1,18 +1,10 @@
-import type { OpenAIMessage } from '$lib/apps/chat/core';
-import type { MemporyGetResult } from '$lib/apps/memory/core';
-
 export interface BrainRunCmd {
-	profileId: string;
+	userId: string;
 	chatId: string;
-	history: OpenAIMessage[];
-	memo: MemporyGetResult;
-}
-
-export interface BrainRunResult {
-	response: string;
+	query: string;
 }
 
 export interface BrainApp {
-	run(cmd: BrainRunCmd): Promise<string>;
-	runStream(cmd: BrainRunCmd): Promise<ReadableStream>;
+	ask(cmd: BrainRunCmd): Promise<string>;
+	askStream(cmd: BrainRunCmd): Promise<ReadableStream>;
 }

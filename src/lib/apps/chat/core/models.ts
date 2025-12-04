@@ -13,6 +13,28 @@ export type MessageChunk = {
 	i?: number;
 };
 
+export enum EventType {
+	Story = 'story',
+	Chat = 'chat',
+	Action = 'action',
+	Decision = 'decision'
+}
+export enum Importance {
+	Low = 'low',
+	Medium = 'medium',
+	High = 'high'
+}
+
+export type UtilsMode = 'name';
+
+export type ChatEventMemory = {
+	type: EventType;
+	content: string;
+	chatId: string;
+	tokens: number;
+	importance: Importance;
+};
+
 export type OpenAIMessage = {
 	role: 'user' | 'assistant' | 'system' | 'tool';
 	content: string;

@@ -1,202 +1,221 @@
-import type { OpenAIMessage } from '$lib/apps/chat/core';
-import type { MemporyGetResult } from '$lib/apps/memory/core';
-import { grok, LLMS } from '$lib/shared/server';
 import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
 
-import type { Agent, Tool, ToolCall } from '../../core';
+import {
+	// openai,
+	grok,
+	LLMS
+} from '$lib/shared/server';
 
-const AGENT_PROMPT = `
-You are a helpful assistant.
-You are given a history of messages and a memory.
-You need to use the available tools to achieve the user goal.
+import type { Agent, AgentRunCmd, Tool, ToolCall } from '$lib/shared/server';
+import { observe } from '@langfuse/tracing';
+
+const OBSERVATION_NAME = 'simple-agent';
+const OBSERVATION_TYPE = 'agent';
+const AGENT_MODEL = LLMS.GROK_4_1_FAST;
+const MAX_LOOP_ITERATIONS = 1;
+const llm = grok;
+
+export const SIMPLE_PROMPT = `
+[HIGH-LEVEL ROLE AND PURPOSE]
+You are a pain discovery assistant. Help users quickly draft business problems (pains) worth solving.
+Your primary purpose is to help users discover business problems worth solving.
+
+[BEHAVIORAL PRINCIPLES]
+Follow these behavioral principles:
+- Be: concise.
+- Prioritize: correctness > completeness > style.
+- Never: inventing facts, breaking constraints.
+If any instruction conflicts with platform or safety policies, you must follow the higher-level safety rules.
+
+[GLOBAL OBJECTIVES]
+Your main objectives are:
+1) Extract segment, problem, JTBD, and keywords from what the user says
+2) Ask short clarifying questions if needed
+
+[INPUT DESCRIPTION]
+You will receive:
+- HISTORY:
+    a previous conversation history with user query as the last message.
+- KNOWLEDGE:
+    additional data relevant to the task (documents, code, settings, etc.).
+    Use KNOWLEDGE as your primary source of truth when answering task-specific questions.
+    You do NOT have access to hidden information beyond the provided CONTEXT and your general training.
+    Explicitly say what is unknown or ambiguous.
+- TOOLS:
+    createPain: Create new draft (segment, problem, jtbd, keywords)
+    updatePain: Edit existing draft by id
+
+
+[TOOLS INSTRUCTIONS]
+- Draft a lot of pains with createPain, user will select the best ones.
+- If user wants to edit a pain, use updatePain.
+
+[KNOWLEDGE]
+{KNOWLEDGE}
+
+[CONSTRAINTS & LIMITATIONS]
+You MUST obey these constraints:
+Assume:
+- You do NOT have access to hidden information beyond the provided CONTEXT and your general training.
+- Some information in CONTEXT may be incomplete or outdated.
+If information is missing or uncertain:
+- Explicitly say what is unknown or ambiguous.
+- Ask for clarification if needed, or propose safe assumptions and label them clearly.
+
+[OUTPUT FORMAT]
+Unless explicitly overridden, respond using the following structure:
+- Be brief. No long explanations.
+- Always use markdown
+- Answer in chat dialog format
+- Never add metadata to the output, just the answer itself.
+- NEVER START WITH "Assistant:" or "User:" or "System:" or any other role name.
 `;
 
-const MAX_LOOP_AMOUNT = 3;
-
 export class SimpleAgent implements Agent {
-	constructor() {}
+	constructor(public readonly tools: Tool[]) {}
 
-	async run(history: OpenAIMessage[], memo: MemporyGetResult, tools: Tool[]): Promise<string> {
-		// const res = await grok.chat.completions.create({
-		// 	model: LLMS.GROK_4_1_FAST,
-		// 	messages: messages,
-		// 	stream: false,
-		// 	tools,
-		// 	tool_choice: 'auto'
-		// });
+	run = observe(
+		async (cmd: AgentRunCmd): Promise<string> => {
+			const { dynamicArgs, tools, history, knowledge } = cmd;
+			const messages = this.buildMessages(history as ChatCompletionMessageParam[], knowledge);
 
-		// const openaiToolCalls = res.choices[0].message.tool_calls;
-		// return res.choices[0].message.content || '';
-		console.log(history, memo, tools);
-		return '';
-	}
+			// Run tool loop
+			const result = await this.runToolLoop(messages, dynamicArgs, [...tools, ...this.tools]);
+			if (result) return result;
 
-	async runStream(
-		history: OpenAIMessage[],
-		memo: MemporyGetResult,
-		tools: Tool[]
-	): Promise<ReadableStream> {
-		const encoder = new TextEncoder();
-		const initialMessages = await this.prepare(history, memo);
+			const res = await llm.chat.completions.create({
+				model: AGENT_MODEL,
+				messages,
+				stream: false
+			});
 
-		return new ReadableStream({
-			async start(controller) {
-				try {
-					let stepTools = tools;
-					// Используем более широкий тип для работы со стримами OpenAI
-					const workflowMessages: ChatCompletionMessageParam[] = [...initialMessages];
+			const content = res.choices[0].message.content || '';
+			history.push({ role: 'assistant', content });
 
-					for (let i = 0; i < MAX_LOOP_AMOUNT; i++) {
-						if (i === MAX_LOOP_AMOUNT - 1) stepTools = [];
+			return content;
+		},
+		{
+			name: OBSERVATION_NAME,
+			asType: OBSERVATION_TYPE
+		}
+	);
 
-						// Открываем новый стрим к OpenAI
-						const stream = await grok.chat.completions.create({
-							model: LLMS.GROK_4_1_FAST,
-							messages: workflowMessages,
-							stream: true,
-							tools: stepTools.length > 0 ? stepTools : undefined,
-							tool_choice: stepTools.length > 0 ? 'auto' : undefined,
-							stream_options: { include_usage: true }
-						});
+	runStream = observe(
+		async (cmd: AgentRunCmd): Promise<ReadableStream> => {
+			const { dynamicArgs, tools, history, knowledge } = cmd;
+			const messages = this.buildMessages(history as ChatCompletionMessageParam[], knowledge);
 
-						let accumulatedContent = '';
-						const toolCalls: ToolCall[] = [];
-
-						// Читаем из стрима и передаем данные наружу
-						for await (const chunk of stream) {
-							if (chunk.choices && chunk.choices.length > 0) {
-								const choice = chunk.choices[0];
-								const delta = choice.delta;
-
-								// Обрабатываем текстовый контент
-								if (delta?.content) {
-									accumulatedContent += delta.content;
-									controller.enqueue(encoder.encode(delta.content));
-								}
-
-								// Собираем tool calls
-								if (delta?.tool_calls) {
-									for (const toolCall of delta.tool_calls) {
-										const index = toolCall.index ?? 0;
-										if (!toolCalls[index]) {
-											toolCalls[index] = {
-												id: toolCall.id || '',
-												name: toolCall.function?.name || '',
-												args: JSON.parse(toolCall.function?.arguments || '{}')
-											};
-										} else {
-											toolCalls[index].args = {
-												...toolCalls[index].args,
-												...JSON.parse(toolCall.function?.arguments || '{}')
-											};
-										}
-									}
-								}
-							}
-						}
-
-						// Если есть tool calls, обрабатываем их и продолжаем цикл
-						if (toolCalls.length > 0 && i < MAX_LOOP_AMOUNT - 1) {
-							// Добавляем ответ ассистента с tool calls в историю
-							workflowMessages.push({
-								role: 'assistant',
-								content: accumulatedContent || null,
-								tool_calls: toolCalls.map((tc) => ({
-									id: tc.id,
-									type: 'function',
-									function: {
-										name: tc.name,
-										arguments: tc.args ? JSON.stringify(tc.args) : '{}'
-									}
-								}))
-							});
-
-							// Здесь должна быть логика выполнения tool calls
-							// Пока что просто добавляем результаты в историю
-							for (const toolCall of toolCalls) {
-								workflowMessages.push({
-									role: 'tool',
-									tool_call_id: toolCall.id,
-									content: JSON.stringify({ result: 'Tool executed' }) // Заменить на реальный результат
-								});
-							}
-
-							// Продолжаем цикл для следующего запроса
-							continue;
-						}
-
-						// Если нет tool calls или это последняя итерация - завершаем
-						break;
+			const result = await this.runToolLoop(messages, dynamicArgs, [...tools, ...this.tools]);
+			if (result) {
+				return new ReadableStream({
+					async start(controller) {
+						controller.enqueue(result);
+						controller.close();
 					}
-				} catch (error) {
-					controller.error(error);
-				} finally {
+				});
+			}
+
+			const res = await llm.chat.completions.create({
+				model: AGENT_MODEL,
+				messages,
+				stream: true,
+				stream_options: { include_usage: true }
+			});
+			return new ReadableStream({
+				async start(controller) {
+					for await (const chunk of res) {
+						const delta = chunk.choices[0]?.delta;
+						if (delta?.content) {
+							controller.enqueue(delta.content);
+						}
+					}
 					controller.close();
 				}
+			});
+		},
+		{
+			name: OBSERVATION_NAME,
+			asType: OBSERVATION_TYPE
+		}
+	);
+
+	private async runToolLoop(
+		workflowMessages: ChatCompletionMessageParam[],
+		dynamicArgs: Record<string, unknown>,
+		tools: Tool[]
+	): Promise<string> {
+		let result = '';
+		// const createPainTool = tools.find((t) => t.schema.function.name === 'createPain');
+		for (let i = 0; i < MAX_LOOP_ITERATIONS; i++) {
+			const res = await llm.chat.completions.create({
+				model: AGENT_MODEL,
+				messages: workflowMessages,
+				stream: false,
+				tools: tools.map((t) => t.schema),
+				tool_choice: 'auto'
+			});
+
+			const message = res.choices[0].message;
+			const openaiToolCalls = message.tool_calls;
+
+			const toolCalls: ToolCall[] =
+				openaiToolCalls
+					?.filter((tc): tc is Extract<typeof tc, { function: unknown }> => 'function' in tc)
+					.map((tc) => ({
+						id: tc.id,
+						name: tc.function.name,
+						args: JSON.parse(tc.function.arguments || '{}')
+					})) || [];
+
+			// No tool calls = done with loop
+			if (toolCalls.length === 0) {
+				result = message.content || '';
+				break;
 			}
-		});
+
+			// Add assistant message with tool calls
+			workflowMessages.push({
+				role: 'assistant',
+				content: message.content || null,
+				tool_calls: openaiToolCalls
+			});
+
+			// Execute tools and add results
+			for (const toolCall of toolCalls) {
+				const tool = tools.find((t) => t.schema.function.name === toolCall.name);
+				if (!tool) throw new Error(`Unknown tool: ${toolCall.name}`);
+				await tool.callback({ ...dynamicArgs, ...toolCall.args });
+				workflowMessages.push({
+					role: 'tool',
+					tool_call_id: toolCall.id,
+					content: `Tool ${toolCall.name} executed successfully`
+				});
+			}
+		}
+		return result;
 	}
 
-	private async prepare(
-		history: OpenAIMessage[],
-		memo: MemporyGetResult
-	): Promise<OpenAIMessage[]> {
-		const messages: OpenAIMessage[] = [];
-
-		if (memo.static) {
+	private buildMessages(
+		history: ChatCompletionMessageParam[],
+		knowledge: string
+	): ChatCompletionMessageParam[] {
+		const messages: ChatCompletionMessageParam[] = [
+			{
+				role: 'system',
+				content: this.buildPrompt(knowledge)
+			}
+		];
+		if (history.length > 0) {
 			messages.push({
 				role: 'system',
-				content: `Static memories`
+				content: '[CHAT HISTORY]:'
 			});
-			const parts = memo.static
-				.map((part) => {
-					return `- ${part.content}`;
-				})
-				.join('\n');
-			messages.push({
-				role: 'user',
-				content: parts
-			});
+			messages.push(...history);
 		}
-
-		messages.push({
-			role: 'system',
-			content: AGENT_PROMPT
-		});
-		messages.push(...history);
-
-		if (memo.profile) {
-			messages.push({
-				role: 'system',
-				content: `User prfile memories`
-			});
-			const parts = memo.profile
-				.map((part) => {
-					return `- ${part.content}`;
-				})
-				.join('\n');
-			messages.push({
-				role: 'user',
-				content: parts
-			});
-		}
-
-		if (memo.event) {
-			messages.push({
-				role: 'system',
-				content: `Chat event memories`
-			});
-			const parts = memo.event
-				.map((part) => {
-					return `- ${part.content}`;
-				})
-				.join('\n');
-			messages.push({
-				role: 'user',
-				content: parts
-			});
-		}
-
 		return messages;
+	}
+
+	private buildPrompt(knowledge: string): string {
+		return SIMPLE_PROMPT.replace('{KNOWLEDGE}', knowledge);
 	}
 }

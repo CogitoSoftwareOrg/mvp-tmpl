@@ -5,6 +5,7 @@ import type { UserApp } from '$lib/apps/user/core';
 import type { AddSourceCmd, EdgeApp, StreamChatCmd } from '../core';
 
 const DEFAULT_CHARGE_AMOUNT = 1;
+const DEFAULT_SOURCE_CHARGE_AMOUNT = 1;
 
 export class EdgeAppImpl implements EdgeApp {
 	constructor(
@@ -59,12 +60,12 @@ export class EdgeAppImpl implements EdgeApp {
 	}
 
 	async addSource(cmd: AddSourceCmd): Promise<void> {
-		const { principal, mode, file, title, url } = cmd;
+		const { principal, mode, file, title, url, metadata } = cmd;
 		if (!principal) throw new Error('Unauthorized');
 		if (principal.remaining <= 0) throw new Error('Insufficient balance');
 
-		await this.sourceApp.addSource({ userId: principal.user.id, mode, file, title, url });
+		await this.sourceApp.addSource({ userId: principal.user.id, mode, file, title, url, metadata });
 
-		
+		await this.userApp.charge({ subId: principal.sub.id, amount: DEFAULT_SOURCE_CHARGE_AMOUNT });
 	}
 }

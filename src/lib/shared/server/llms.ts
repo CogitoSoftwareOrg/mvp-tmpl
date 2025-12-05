@@ -3,6 +3,18 @@ import { zodFunction } from 'openai/helpers/zod.js';
 
 import type { OpenAIMessage } from '$lib/apps/chat/core';
 
+import OpenAI from 'openai';
+import { observeOpenAI } from '@langfuse/openai';
+
+import { env } from '$env/dynamic/private';
+
+export const llm = observeOpenAI(
+	new OpenAI({
+		baseURL: 'https://openrouter.ai/api/v1',
+		apiKey: env.OPENROUTER_API_KEY
+	})
+);
+
 export const LLMS = {
 	// OpenAI
 	GPT_5_NANO: 'gpt-5-nano',
@@ -13,7 +25,10 @@ export const LLMS = {
 	GROK_4_FAST_NON_REASONING: 'grok-4-fast-non-reasoning',
 	GROK_4_FAST: 'grok-4-fast',
 	GROK_4_1_FAST: 'grok-4-1-fast-reasoning',
-	GROK_4_1_FAST_NON_REASONING: 'grok-4-1-fast-non-reasoning'
+	GROK_4_1_FAST_NON_REASONING: 'grok-4-1-fast-non-reasoning',
+
+	// OpenRouter
+	OPENROUTER_GROK_4_1_FAST: 'x-ai/grok-4.1-fast'
 } as const;
 
 export const TOKENIZERS = {

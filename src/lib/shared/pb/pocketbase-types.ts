@@ -221,6 +221,7 @@ export enum SourcesStatusOptions {
 	"normalized" = "normalized",
 	"indexed" = "indexed",
 	"error" = "error",
+	"used" = "used",
 }
 export type SourcesRecord<Tmetadata = unknown> = {
 	created: IsoAutoDateString

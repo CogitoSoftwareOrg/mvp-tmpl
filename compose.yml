@@ -12,8 +12,13 @@ services:
       - LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY:-pk-lf-f7e217ed-2076-40cf-8a8c-d3da536fff2c}
       - LANGFUSE_BASE_URL=${LANGFUSE_BASE_URL:-https://langfuse.quizbee.academy}
       - PUBLIC_POSTHOG=${PUBLIC_POSTHOG}
+      - CRAWL4AI_USER=${CRAWL4AI_USER:-admin}
+      - CRAWL4AI_URL=${CRAWL4AI_URL:-https://crawl4ai.quizbee.academy}
+      - UNSTRUCTURED_URL=${UNSTRUCTURED_URL:-https://unstructured.cogitosoftware.nl}
 
       # SECRETS
+      - CRAWL4AI_API_KEY=${CRAWL4AI_API_KEY}
+      - UNSTRUCTURED_API_KEY=${UNSTRUCTURED_API_KEY}
       - PB_EMAIL=${PB_EMAIL}
       - PB_PASSWORD=${PB_PASSWORD}
       - MEILI_MASTER_KEY=${MEILI_MASTER_KEY}
@@ -25,3 +30,5 @@ services:
       - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
       - TG_ID=${TG_ID}
       - TG_TOKEN=${TG_TOKEN}
+
+      - FIRECRAWL_API_KEY=${FIRECRAWL_API_KEY}

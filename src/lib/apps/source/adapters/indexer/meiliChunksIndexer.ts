@@ -11,7 +11,7 @@ const BATCH_SIZE = 128;
 const VOYAGE_EMBEDDER = 'voyage';
 const OUTPUT_DIMENSION = 1024;
 const SEARCH_RATIO = 0.75;
-const CHUNK_TOKEN_LIMIT = 256;
+const CHUNK_TOKEN_LIMIT = 512;
 
 export type ChunkDoc = {
 	id: string;
@@ -57,7 +57,7 @@ export class MeiliChunksIndexer implements ChunksIndexer {
 
 		const validChunks = chunks.filter((chunk) => {
 			if (chunk.tokens > CHUNK_TOKEN_LIMIT) {
-				console.warn('Chunk tokens are too high', chunk);
+				console.warn('Chunk tokens are too high', chunk.tokens);
 				return false;
 			}
 			return true;

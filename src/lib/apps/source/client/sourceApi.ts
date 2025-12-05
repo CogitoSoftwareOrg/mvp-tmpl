@@ -1,12 +1,28 @@
-import { Collections, pb, type Create } from '$lib';
+import { Collections, type Create } from '$lib';
 
 import { sourcesStore } from './sources.svelte';
 
 export class SourceApi {
-	async addSource(dto: Create<Collections.Sources>) {
+	async addSource(dto: Create<Collections.Sources>, file: File) {
 		sourcesStore.addOptimistic(dto);
-		const source = await pb.collection(Collections.Sources).create(dto);
-		return source;
+
+		const formData = new FormData();
+
+		formData.append('file', file);
+		formData.append('title', file.name);
+		formData.append('metadata', JSON.stringify(dto.metadata));
+
+		const response = await fetch('/api/sources', {
+			method: 'POST',
+			body: formData
+		});
+
+		if (!response.ok) {
+			throw new Error('Failed to upload file');
+		}
+
+		const newSource = await response.json();
+		return newSource;
 	}
 }
 

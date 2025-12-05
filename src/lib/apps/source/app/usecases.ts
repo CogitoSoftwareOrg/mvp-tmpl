@@ -1,4 +1,10 @@
-import { Collections, pb, SourcesStatusOptions, type ChunksResponse } from '$lib/shared';
+import {
+	Collections,
+	pb,
+	SourcesStatusOptions,
+	type ChunksResponse,
+	type SourcesResponse
+} from '$lib/shared';
 
 import type {
 	Normalizer,
@@ -17,7 +23,7 @@ export class SourceAppImpl implements SourceApp {
 		private readonly crawler: Crawler
 	) {}
 
-	async addSource(cmd: AddSourceCmd): Promise<void> {
+	async addSource(cmd: AddSourceCmd) {
 		let file = cmd.file;
 
 		if (cmd.mode === 'url') {
@@ -28,16 +34,39 @@ export class SourceAppImpl implements SourceApp {
 		}
 
 		const source = await pb.collection(Collections.Sources).create({
-			userId: cmd.userId,
+			user: cmd.userId,
 			file,
 			title: cmd.title,
 			url: cmd.url,
-			status: SourcesStatusOptions.loaded
+			status: SourcesStatusOptions.loaded,
+			metadata: cmd.metadata
 		});
 
 		if (!file) throw new Error('File is required');
-		const chunks = await this.normalizer.normalize(source, file);
-		await this.chunksIndexer.add(chunks, cmd.userId);
+
+		// Process in background (fire and forget)
+		this.processSource(source, file, cmd.userId).catch((error) => {
+			console.error('Failed to process source:', error);
+		});
+	}
+
+	private async processSource(source: SourcesResponse, file: File, userId: string): Promise<void> {
+		try {
+			const chunks = await this.normalizer.normalize(source, file);
+			await pb.collection(Collections.Sources).update(source.id, {
+				status: SourcesStatusOptions.normalized
+			});
+
+			await this.chunksIndexer.add(chunks, userId);
+			await pb.collection(Collections.Sources).update(source.id, {
+				status: SourcesStatusOptions.indexed
+			});
+		} catch (error) {
+			await pb.collection(Collections.Sources).update(source.id, {
+				status: SourcesStatusOptions.error
+			});
+			console.error('Source processing failed:', error);
+		}
 	}
 
 	async removeSource(cmd: RemoveSourceCmd): Promise<void> {

@@ -7,6 +7,7 @@
 	import { uiStore, swipeable } from '$lib/shared/ui';
 	import { userStore, subStore, FeedbackForm } from '$lib/apps/user/client';
 	import { Button, Modal, ThemeController, AuthWall, Paywall, Sidebar } from '$lib/shared/ui';
+	import { sourcesStore } from '$lib/apps/source/client';
 	import { ChatsStatusOptions } from '$lib';
 
 	import Splash from './Splash.svelte';
@@ -27,10 +28,11 @@
 	const currentChat = $derived(chats.find((c) => c.id === currentChatId));
 
 	$effect(() => {
-		globalPromise.then(({ user, sub, chats }) => {
+		globalPromise.then(({ user, sub, chats, sources }) => {
 			if (user) userStore.user = user;
 			if (sub) subStore.sub = sub;
 			if (chats) chatsStore.set(chats);
+			if (sources) sourcesStore.set(sources);
 		});
 	});
 
@@ -39,9 +41,11 @@
 		if (!userId) return;
 		userStore.subscribe(userId);
 		chatsStore.subscribe(userId);
+		sourcesStore.subscribe(userId);
 		return () => {
 			userStore.unsubscribe();
 			chatsStore.unsubscribe();
+			sourcesStore.unsubscribe();
 		};
 	});
 
@@ -84,7 +88,7 @@
 	{#if expanded}
 		<a href="/app" class="flex items-center gap-2">
 			<Heart class="size-6 text-primary" />
-			<span class="font-semibold">MVP Template</span>
+			<span class="font-semibold text-nowrap">MVP Template</span>
 		</a>
 	{/if}
 {/snippet}

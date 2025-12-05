@@ -16,12 +16,17 @@ class ChatApi {
 		return chat;
 	}
 
-	async sendMessage(dto: Create<Collections.Messages>) {
+	async sendMessage(dto: Create<Collections.Messages>, sourceIds?: string[]) {
 		if (!dto.content) throw new Error('Content is required');
 
 		messagesStore.addOptimisticMessage(dto);
 
-		const es = new EventSource(`/api/chats/${dto.chat}/sse?q=${encodeURIComponent(dto.content)}`, {
+		const params = new URLSearchParams({ q: dto.content });
+		if (sourceIds?.length) {
+			params.set('sourceIds', sourceIds.join(','));
+		}
+
+		const es = new EventSource(`/api/chats/${dto.chat}/sse?${params.toString()}`, {
 			withCredentials: true
 		});
 

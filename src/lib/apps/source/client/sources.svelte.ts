@@ -3,6 +3,10 @@ import { Collections, pb, SourcesStatusOptions, type Create, type SourcesRespons
 class SourcesStore {
 	_sources: SourcesResponse[] = $state([]);
 
+	set(sources: SourcesResponse[]) {
+		this._sources = sources;
+	}
+
 	sources = $derived(this._sources);
 
 	addOptimistic(dto: Create<Collections.Sources>) {

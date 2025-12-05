@@ -3,7 +3,7 @@ import { pb, type UsersResponse, type UserExpand, Collections } from '$lib';
 export async function globalUserLoad() {
 	console.log('globalUserLoad', pb.authStore.isValid);
 	if (!pb.authStore.isValid) {
-		return { user: null, sub: null, chats: [] };
+		return { user: null, sub: null, chats: [], sources: [] };
 	}
 
 	try {
@@ -16,10 +16,15 @@ export async function globalUserLoad() {
 			sort: '-created'
 		});
 
-		return { user, sub, chats };
+		const sources = await pb.collection(Collections.Sources).getFullList({
+			filter: `user = "${user.id}"`,
+			sort: '-created'
+		});
+
+		return { user, sub, chats, sources };
 	} catch (error) {
 		console.error(error);
 		pb.authStore.clear();
-		return { user: null, sub: null, chats: [] };
+		return { user: null, sub: null, chats: [], sources: [] };
 	}
 }

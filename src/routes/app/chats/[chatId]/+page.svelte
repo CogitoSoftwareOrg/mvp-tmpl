@@ -98,9 +98,11 @@
 		</div>
 
 		<!-- Footer / Input -->
-		<footer class="shrink-0 border-t border-base-300 bg-base-100 p-2">
-			<MessageControls {messages} onSend={handleSend} />
-		</footer>
+		{#if chatId}
+			<footer class="shrink-0 border-t border-base-300 bg-base-100 p-2">
+				<MessageControls {chatId} {messages} onSend={handleSend} />
+			</footer>
+		{/if}
 	</div>
 {:else}
 	<div class="flex h-full items-center justify-center">

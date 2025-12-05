@@ -1,9 +1,8 @@
 import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
+import { observe } from '@langfuse/tracing';
 
 import { llm, LLMS } from '$lib/shared/server';
-
 import type { Agent, AgentRunCmd, Tool, ToolCall } from '$lib/shared/server';
-import { observe } from '@langfuse/tracing';
 
 const OBSERVATION_NAME = 'simple-agent';
 const OBSERVATION_TYPE = 'agent';

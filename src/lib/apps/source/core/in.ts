@@ -16,8 +16,8 @@ export type RemoveSourceCmd = {
 export type SearchChunksCmd = {
 	userId: string;
 	sourceIds: string[];
+	tokens: number;
 	query: string;
-	limitTokens: number;
 };
 
 export interface SourceApp {

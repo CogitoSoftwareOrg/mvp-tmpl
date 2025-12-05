@@ -45,6 +45,6 @@ export class SourceAppImpl implements SourceApp {
 	}
 
 	async searchChunks(cmd: SearchChunksCmd): Promise<ChunksResponse[]> {
-		return this.chunksIndexer.search(cmd.query, cmd.limitTokens, cmd.sourceIds, cmd.userId);
+		return this.chunksIndexer.search(cmd.query, cmd.tokens, cmd.sourceIds, cmd.userId);
 	}
 }

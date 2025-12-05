@@ -1,14 +1,16 @@
 import type { BrainApp } from '$lib/apps/brain/core';
+import type { SourceApp } from '$lib/apps/source/core';
 import type { UserApp } from '$lib/apps/user/core';
 
-import type { EdgeApp, StreamChatCmd } from '../core';
+import type { AddSourceCmd, EdgeApp, StreamChatCmd } from '../core';
 
 const DEFAULT_CHARGE_AMOUNT = 1;
 
 export class EdgeAppImpl implements EdgeApp {
 	constructor(
 		private readonly userApp: UserApp,
-		private readonly brainApp: BrainApp
+		private readonly brainApp: BrainApp,
+		private readonly sourceApp: SourceApp
 	) {}
 
 	async streamChat(cmd: StreamChatCmd): Promise<ReadableStream> {
@@ -54,5 +56,15 @@ export class EdgeAppImpl implements EdgeApp {
 				}
 			}
 		});
+	}
+
+	async addSource(cmd: AddSourceCmd): Promise<void> {
+		const { principal, mode, file, title, url } = cmd;
+		if (!principal) throw new Error('Unauthorized');
+		if (principal.remaining <= 0) throw new Error('Insufficient balance');
+
+		await this.sourceApp.addSource({ userId: principal.user.id, mode, file, title, url });
+
+		
 	}
 }

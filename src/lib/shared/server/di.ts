@@ -31,8 +31,8 @@ export const getDI = () => {
 	const sourceApp = getSourceApp();
 
 	const jobApp = getJobApp();
-	const brainApp = getBrainApp(chatApp, userApp);
-	const edgeApp = getEdgeApp(userApp, brainApp);
+	const brainApp = getBrainApp(chatApp, userApp, sourceApp);
+	const edgeApp = getEdgeApp(userApp, brainApp, sourceApp);
 
 	di = {
 		source: sourceApp,

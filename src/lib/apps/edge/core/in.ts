@@ -6,6 +6,16 @@ export interface StreamChatCmd {
 	query: string;
 }
 
+export interface AddSourceCmd {
+	principal: Principal;
+	mode: 'file' | 'url';
+	file?: File;
+	title?: string;
+	url?: string;
+}
+
 export interface EdgeApp {
 	streamChat(cmd: StreamChatCmd): Promise<ReadableStream>;
+
+	addSource(cmd: AddSourceCmd): Promise<void>;
 }

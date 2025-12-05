@@ -4,6 +4,7 @@ import type { MessagesResponse } from '$lib/shared';
 import type { Agent, Tool } from '$lib/shared/server';
 import type { ChatApp, OpenAIMessage } from '$lib/apps/chat/core';
 import type { UserApp } from '$lib/apps/user/core';
+import type { SourceApp } from '$lib/apps/source/core';
 
 import type { BrainApp, BrainRunCmd, Mode } from '../core';
 import { SaveMemoriesToolSchema, SaveMemoriesArgs } from '../core/tools';
@@ -11,7 +12,7 @@ import { SaveMemoriesToolSchema, SaveMemoriesArgs } from '../core/tools';
 const HISTORY_TOKENS = 2000;
 const USER_MEMORY_TOKENS = 5000;
 const CHAT_EVENT_MEMORY_TOKENS = 5000;
-// const ARTIFCAT_MEMORY_TOKENS = 5000;
+const CHUNKS_MEMORY_TOKENS = 5000;
 
 export class BrainAppImpl implements BrainApp {
 	private tools: Tool[] = [];
@@ -19,7 +20,8 @@ export class BrainAppImpl implements BrainApp {
 	constructor(
 		private readonly agents: Record<Mode, Agent>,
 		private readonly chatApp: ChatApp,
-		private readonly userApp: UserApp
+		private readonly userApp: UserApp,
+		private readonly sourceApp: SourceApp
 	) {
 		const saveMemoriesTool: Tool = {
 			// @ts-expect-error - not typed
@@ -149,15 +151,16 @@ export class BrainAppImpl implements BrainApp {
 			knowledge += chatEventMemories.map((chatEvent) => `- ${chatEvent.content}`).join('\n');
 		}
 
-		// const artifactMemories = await this.artifactApp.getMemories({
-		// 	userId: userId,
-		// 	query: query,
-		// 	tokens: ARTIFCAT_MEMORY_TOKENS
-		// });
-		// if (artifactMemories.length > 0) {
-		// 	knowledge += '\n\nArtifact memories:';
-		// 	knowledge += artifactMemories.map((artifact) => `- ${artifact.data.payload}`).join('\n');
-		// }
+		const chunks = await this.sourceApp.searchChunks({
+			userId: userId,
+			query: query,
+			tokens: CHUNKS_MEMORY_TOKENS,
+			sourceIds: []
+		});
+		if (chunks.length > 0) {
+			knowledge += '\n\nArtifact memories:';
+			knowledge += chunks.map((chunk) => `- ${chunk.content}`).join('\n');
+		}
 
 		return knowledge;
 	}

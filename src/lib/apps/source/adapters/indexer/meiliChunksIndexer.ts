@@ -2,7 +2,7 @@ import { type Index, MeiliSearch, type UserProvidedEmbedder } from 'meilisearch'
 import { env } from '$env/dynamic/private';
 
 import { Collections, pb, type ChunksResponse } from '$lib/shared';
-import { EMBEDDERS, voyage } from '$lib/shared/server';
+import { EMBEDDERS, voyage, voyageEmbed } from '$lib/shared/server';
 
 import type { ChunksIndexer } from '../../core';
 
@@ -69,25 +69,15 @@ export class MeiliChunksIndexer implements ChunksIndexer {
 
 		console.log(`Indexing ${validChunks.length} chunks`);
 
-		const embedTasks = [];
-		for (let i = 0; i < validChunks.length; i += BATCH_SIZE) {
-			const batch = validChunks.slice(i, i + BATCH_SIZE).map((chunk) => chunk.content);
-			embedTasks.push(
-				voyage.embed({
-					input: batch,
-					model: EMBEDDERS.VOYAGE_LITE,
-					inputType: 'document',
-					outputDimension: OUTPUT_DIMENSION
-				})
-			);
-		}
-		const embeddings = (await Promise.all(embedTasks))
-			.flatMap((res) => res.data)
-			.map((res) => res?.embedding);
+		const embeddings = await voyageEmbed(
+			validChunks.map((chunk) => chunk.content),
+			BATCH_SIZE,
+			OUTPUT_DIMENSION
+		);
 
 		for (let i = 0; i < validChunks.length; i++) {
 			const chunk = validChunks[i];
-			const embedding = embeddings[i];
+			const embedding = embeddings[i] ?? [];
 			if (!embedding) {
 				console.warn('Embedding is not valid', chunk);
 				continue;
@@ -156,7 +146,7 @@ export class MeiliChunksIndexer implements ChunksIndexer {
 
 		const chunkIds = res.hits.map((hit) => hit.id);
 		return await pb.collection(Collections.Chunks).getFullList({
-			filter: `id = "${chunkIds.join('" OR id = "')}"`
+			filter: `id = "${chunkIds.join('" || id = "')}"`
 		});
 	}
 
@@ -167,7 +157,7 @@ export class MeiliChunksIndexer implements ChunksIndexer {
 	private buildSourceIdsFilter(userId: string, sourceIds: string[]): string {
 		let f = `(userId = "${userId}")`;
 		if (sourceIds.length > 0) {
-			f += ` AND (sourceId = "${sourceIds.join('" OR sourceId = "')}")`;
+			f += ` AND (sourceId IN [${sourceIds.join(',')}]`;
 		}
 		return f;
 	}

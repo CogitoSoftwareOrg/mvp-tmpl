@@ -2,7 +2,7 @@ import { type Index, MeiliSearch, type UserProvidedEmbedder } from 'meilisearch'
 import { env } from '$env/dynamic/private';
 
 import { nanoid } from '$lib/shared';
-import { EMBEDDERS, voyage } from '$lib/shared/server';
+import { EMBEDDERS, voyage, voyageEmbed } from '$lib/shared/server';
 
 import type { UserMemory, UserIndexer, Importance } from '../../core';
 import { building } from '$app/environment';
@@ -78,21 +78,11 @@ export class MeiliUserIndexer implements UserIndexer {
 
 		console.log(`Indexing ${validMemories.length} profile memories`);
 
-		const embedTasks = [];
-		for (let i = 0; i < validMemories.length; i += BATCH_SIZE) {
-			const batch = validMemories.slice(i, i + BATCH_SIZE).map((memory) => memory.content);
-			embedTasks.push(
-				voyage.embed({
-					input: batch,
-					model: EMBEDDERS.VOYAGE_LITE,
-					inputType: 'document',
-					outputDimension: OUTPUT_DIMENSION
-				})
-			);
-		}
-		const embeddings = (await Promise.all(embedTasks))
-			.flatMap((res) => res.data)
-			.map((res) => res?.embedding);
+		const embeddings = await voyageEmbed(
+			validMemories.map((memory) => memory.content),
+			BATCH_SIZE,
+			OUTPUT_DIMENSION
+		);
 
 		for (let i = 0; i < validMemories.length; i++) {
 			const memory = validMemories[i];

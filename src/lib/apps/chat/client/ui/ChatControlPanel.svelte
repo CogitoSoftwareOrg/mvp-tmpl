@@ -10,14 +10,12 @@
 </script>
 
 <div class={['flex h-full flex-col', className]}>
-	<div class="card">
-		<div class={['card-body', compact ? 'p-3' : '']}>
-			<h2 class={['card-title', compact ? 'text-base' : '']}>Control Panel</h2>
+	<header class="h-12 border-b border-base-300 px-3 mb-4">
+		<div class={['', compact ? 'p-3' : '']}>
+			<h2 class={['', compact ? 'text-base' : '']}>Control Panel</h2>
 			<p class="text-sm text-base-content/70">Chat settings and widgets</p>
 		</div>
-	</div>
-
-	<div class="divider my-2"></div>
+	</header>
 
 	<!-- Placeholder widgets - can be extended -->
 	<div class={['space-y-3', compact ? 'px-2' : 'px-4']}>

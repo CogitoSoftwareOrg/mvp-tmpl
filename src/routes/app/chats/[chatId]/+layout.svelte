@@ -34,12 +34,12 @@
 		onClose: () => uiStore.setRightSidebarOpen(false)
 	}}
 >
-	<div class="h-full flex-1 overflow-hidden">
+	<div class="h-full flex-3 overflow-hidden">
 		{@render children()}
 	</div>
 
 	<!-- Desktop Right Sidebar (always visible on desktop) -->
-	<aside class="hidden w-84 shrink-0 border-l border-base-300 md:flex md:flex-col">
+	<aside class="hidden flex-2 w-84 shrink-0 border-l border-base-300 md:flex md:flex-col">
 		<ChatControlPanel />
 	</aside>
 
@@ -47,7 +47,7 @@
 	<Sidebar
 		open={(mobile.current && rightSidebarOpen) ?? false}
 		position="right"
-		mobileWidth="w-72"
+		mobileWidth="w-96 max-w-[calc(100vw-3rem)]"
 		showToggle={false}
 		mobileOnly
 		onclose={() => uiStore.setRightSidebarOpen(false)}

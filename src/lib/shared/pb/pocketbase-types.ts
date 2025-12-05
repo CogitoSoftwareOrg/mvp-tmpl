@@ -12,11 +12,13 @@ export enum Collections {
 	Otps = "_otps",
 	Superusers = "_superusers",
 	Chats = "chats",
+	Chunks = "chunks",
 	Events = "events",
 	Feedbacks = "feedbacks",
 	JobRuns = "jobRuns",
 	Jobs = "jobs",
 	Messages = "messages",
+	Sources = "sources",
 	Subs = "subs",
 	Users = "users",
 }
@@ -112,6 +114,16 @@ export type ChatsRecord = {
 	user: RecordIdString
 }
 
+export type ChunksRecord<Tmetadata = unknown> = {
+	content?: string
+	created: IsoAutoDateString
+	id: string
+	metadata?: null | Tmetadata
+	source?: RecordIdString
+	tokens?: number
+	updated: IsoAutoDateString
+}
+
 export enum EventsTypeOptions {
 	"stripe" = "stripe",
 }
@@ -172,6 +184,7 @@ export type JobsRecord<Targs = unknown> = {
 	enabled?: IsoDateString
 	id: string
 	lastRun?: RecordIdString
+	locked?: IsoDateString
 	maxAttempts?: number
 	nextRun?: IsoDateString
 	task: JobsTaskOptions
@@ -200,6 +213,25 @@ export type MessagesRecord<Tmetadata = unknown> = {
 	role: MessagesRoleOptions
 	status: MessagesStatusOptions
 	updated: IsoAutoDateString
+}
+
+export enum SourcesStatusOptions {
+	"optimistic" = "optimistic",
+	"loaded" = "loaded",
+	"normalized" = "normalized",
+	"indexed" = "indexed",
+	"error" = "error",
+}
+export type SourcesRecord<Tmetadata = unknown> = {
+	created: IsoAutoDateString
+	file?: FileNameString
+	id: string
+	metadata?: null | Tmetadata
+	status?: SourcesStatusOptions
+	title?: string
+	updated: IsoAutoDateString
+	url?: string
+	user?: RecordIdString
 }
 
 export enum SubsTariffOptions {
@@ -258,11 +290,13 @@ export type MfasResponse<Texpand = unknown> = Required<MfasRecord> & BaseSystemF
 export type OtpsResponse<Texpand = unknown> = Required<OtpsRecord> & BaseSystemFields<Texpand>
 export type SuperusersResponse<Texpand = unknown> = Required<SuperusersRecord> & AuthSystemFields<Texpand>
 export type ChatsResponse<Texpand = unknown> = Required<ChatsRecord> & BaseSystemFields<Texpand>
+export type ChunksResponse<Tmetadata = unknown, Texpand = unknown> = Required<ChunksRecord<Tmetadata>> & BaseSystemFields<Texpand>
 export type EventsResponse<Tmetadata = unknown, Texpand = unknown> = Required<EventsRecord<Tmetadata>> & BaseSystemFields<Texpand>
 export type FeedbacksResponse<Texpand = unknown> = Required<FeedbacksRecord> & BaseSystemFields<Texpand>
 export type JobRunsResponse<Tresult = unknown, Texpand = unknown> = Required<JobRunsRecord<Tresult>> & BaseSystemFields<Texpand>
 export type JobsResponse<Targs = unknown, Texpand = unknown> = Required<JobsRecord<Targs>> & BaseSystemFields<Texpand>
 export type MessagesResponse<Tmetadata = unknown, Texpand = unknown> = Required<MessagesRecord<Tmetadata>> & BaseSystemFields<Texpand>
+export type SourcesResponse<Tmetadata = unknown, Texpand = unknown> = Required<SourcesRecord<Tmetadata>> & BaseSystemFields<Texpand>
 export type SubsResponse<Texpand = unknown> = Required<SubsRecord> & BaseSystemFields<Texpand>
 export type UsersResponse<Texpand = unknown> = Required<UsersRecord> & AuthSystemFields<Texpand>
 
@@ -275,11 +309,13 @@ export type CollectionRecords = {
 	_otps: OtpsRecord
 	_superusers: SuperusersRecord
 	chats: ChatsRecord
+	chunks: ChunksRecord
 	events: EventsRecord
 	feedbacks: FeedbacksRecord
 	jobRuns: JobRunsRecord
 	jobs: JobsRecord
 	messages: MessagesRecord
+	sources: SourcesRecord
 	subs: SubsRecord
 	users: UsersRecord
 }
@@ -291,11 +327,13 @@ export type CollectionResponses = {
 	_otps: OtpsResponse
 	_superusers: SuperusersResponse
 	chats: ChatsResponse
+	chunks: ChunksResponse
 	events: EventsResponse
 	feedbacks: FeedbacksResponse
 	jobRuns: JobRunsResponse
 	jobs: JobsResponse
 	messages: MessagesResponse
+	sources: SourcesResponse
 	subs: SubsResponse
 	users: UsersResponse
 }

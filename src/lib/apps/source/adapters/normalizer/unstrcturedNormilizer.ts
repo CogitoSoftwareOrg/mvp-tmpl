@@ -1,7 +1,7 @@
 import { env } from '$env/dynamic/private';
 
 import { Collections, pb, type ChunksResponse, type SourcesResponse } from '$lib/shared';
-import { LLMS, TOKENIZERS } from '$lib/shared/server';
+import { countTokens } from '$lib/shared/server';
 import { type Normalizer, NORMILIZE_CHUNK_CHAR_LIMIT } from '../../core';
 
 export type UnstructuredChunk = {
@@ -52,7 +52,7 @@ export class UnstrcturedNormilizer implements Normalizer {
 				return await pb.collection(Collections.Chunks).create({
 					source: source.id,
 					content: element.text,
-					tokens: TOKENIZERS[LLMS.GROK_4_FAST_NON_REASONING].encode(element.text).length,
+					tokens: countTokens(element.text),
 					metadata: element.metadata
 				});
 			})

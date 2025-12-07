@@ -1,4 +1,4 @@
-import { EMBEDDERS, voyage, voyageEmbed } from '$lib/shared/server';
+import { voyageEmbed } from '$lib/shared/server';
 import { building } from '$app/environment';
 import { type Index, MeiliSearch, type UserProvidedEmbedder } from 'meilisearch';
 import { env } from '$env/dynamic/private';
@@ -134,14 +134,7 @@ export class MeiliChatEventIndexer implements ChatEventIndexer {
 			f += ` AND createdAt >= "${start.toISOString()}"`;
 		}
 
-		const vector = (
-			await voyage.embed({
-				input: [query],
-				model: EMBEDDERS.VOYAGE_LITE,
-				inputType: 'document',
-				outputDimension: OUTPUT_DIMENSION
-			})
-		).data?.[0]?.embedding;
+		const vector = (await voyageEmbed([query], BATCH_SIZE, OUTPUT_DIMENSION)).at(0);
 		if (!vector) {
 			console.warn('Vector is not valid', query);
 			return [];

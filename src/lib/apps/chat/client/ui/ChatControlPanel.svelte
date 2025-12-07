@@ -11,7 +11,7 @@
 
 <div class={['flex h-full flex-col', className]}>
 	<header class="h-12 border-b border-base-300 px-3 mb-4">
-		<div class={['', compact ? 'p-3' : '']}>
+		<div class={['', compact ? 'px-3' : '']}>
 			<h2 class={['', compact ? 'text-base' : '']}>Control Panel</h2>
 			<p class="text-sm text-base-content/70">Chat settings and widgets</p>
 		</div>

@@ -2,7 +2,7 @@ import { type Index, MeiliSearch, type UserProvidedEmbedder } from 'meilisearch'
 import { env } from '$env/dynamic/private';
 
 import { nanoid } from '$lib/shared';
-import { EMBEDDERS, voyage, voyageEmbed } from '$lib/shared/server';
+import { voyageEmbed } from '$lib/shared/server';
 
 import type { UserMemory, UserIndexer, Importance } from '../../core';
 import { building } from '$app/environment';
@@ -126,14 +126,7 @@ export class MeiliUserIndexer implements UserIndexer {
 
 		const f = this.buildUsersFilter([userId]);
 
-		const vector = (
-			await voyage.embed({
-				input: [query],
-				model: EMBEDDERS.VOYAGE_LITE,
-				inputType: 'document',
-				outputDimension: OUTPUT_DIMENSION
-			})
-		).data?.[0]?.embedding;
+		const vector = (await voyageEmbed([query], BATCH_SIZE, OUTPUT_DIMENSION)).at(0);
 		if (!vector) {
 			console.warn('Vector is not valid', query);
 			return [];

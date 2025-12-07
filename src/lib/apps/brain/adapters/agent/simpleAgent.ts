@@ -6,7 +6,7 @@ import type { Agent, AgentRunCmd, Tool, ToolCall } from '$lib/shared/server';
 
 const OBSERVATION_NAME = 'simple-agent';
 const OBSERVATION_TYPE = 'agent';
-const AGENT_MODEL = LLMS.OPENROUTER_GROK_4_1_FAST;
+const AGENT_MODEL = LLMS.GROK_4_1_REASONING;
 const MAX_LOOP_ITERATIONS = 1;
 
 export const SIMPLE_PROMPT = `

@@ -9,7 +9,7 @@ import { llm, LLMS } from '$lib/shared/server';
 
 const OBSERVATION_NAME = 'namer-agent';
 const OBSERVATION_TYPE = 'generation';
-const AGENT_MODEL = LLMS.OPENROUTER_GROK_4_1_FAST;
+const AGENT_MODEL = LLMS.GROK_4_1_NON_REASONING;
 
 export const NAMER_PROMPT = `
 [HIGH-LEVEL ROLE AND PURPOSE]

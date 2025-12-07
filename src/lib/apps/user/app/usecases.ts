@@ -2,7 +2,7 @@ import PocketBase from 'pocketbase';
 import { env } from '$env/dynamic/public';
 
 import { Collections, pb } from '$lib';
-import { LLMS, TOKENIZERS } from '$lib/shared/server';
+import { countTokens } from '$lib/shared/server';
 
 import type {
 	UserApp,
@@ -41,7 +41,7 @@ export class UserAppImpl implements UserApp {
 			userId: dto.userId,
 			content: dto.content,
 			importance: dto.importance,
-			tokens: TOKENIZERS[LLMS.GROK_4_FAST].encode(dto.content).length
+			tokens: countTokens(dto.content)
 		}));
 		await this.userIndexer.add(memories);
 	}

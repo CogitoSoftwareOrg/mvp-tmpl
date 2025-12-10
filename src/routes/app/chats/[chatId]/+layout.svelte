@@ -34,12 +34,12 @@
 		onClose: () => uiStore.setRightSidebarOpen(false)
 	}}
 >
-	<div class="h-full flex-3 overflow-hidden">
+	<div class="h-full flex-4 overflow-hidden">
 		{@render children()}
 	</div>
 
 	<!-- Desktop Right Sidebar (always visible on desktop) -->
-	<aside class="hidden flex-2 w-84 shrink-0 border-l border-base-300 md:flex md:flex-col">
+	<aside class="hidden flex-5 w-84 shrink-0 border-x border-base-300 md:flex md:flex-col">
 		<ChatControlPanel />
 	</aside>
 

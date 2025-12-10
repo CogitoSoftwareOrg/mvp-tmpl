@@ -6,16 +6,16 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
+      - PUBLIC_POSTHOG=${PUBLIC_POSTHOG}
       - ENV=${ENV:-production}
       - PUBLIC_PB_URL=${PUBLIC_PB_URL:-https://mvp-pb.cogitosoftware.nl}
       - MEILI_URL=${MEILI_URL:-https://mvp-meili.cogitosoftware.nl}
       - LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY:-pk-lf-f7e217ed-2076-40cf-8a8c-d3da536fff2c}
       - LANGFUSE_BASE_URL=${LANGFUSE_BASE_URL:-https://langfuse.quizbee.academy}
-      - PUBLIC_POSTHOG=${PUBLIC_POSTHOG}
       - CRAWL4AI_USER=${CRAWL4AI_USER:-admin}
       - CRAWL4AI_URL=${CRAWL4AI_URL:-https://crawl4ai.quizbee.academy}
       - UNSTRUCTURED_URL=${UNSTRUCTURED_URL:-https://unstructured.cogitosoftware.nl}
-      - LITELLM_URL=${LITELLM_URL}
+      - LITELLM_URL=${LITELLM_URL:-https://litellm.hackseeker.com}
 
       # SECRETS
       - LITELLM_API_KEY=${LITELLM_API_KEY}

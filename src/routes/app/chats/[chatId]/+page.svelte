@@ -99,7 +99,7 @@
 
 		<!-- Footer / Input -->
 		{#if chatId}
-			<footer class="shrink-0 border-t border-base-300 bg-base-100 p-2">
+			<footer class="shrink-0 border-t border-base-300 bg-base-100 p-2 pt-[0.4rem]">
 				<MessageControls {chatId} {messages} onSend={handleSend} />
 			</footer>
 		{/if}

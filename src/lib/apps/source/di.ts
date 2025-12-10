@@ -1,9 +1,9 @@
 import type { SourceApp } from './core';
 import { SourceAppImpl } from './app';
-import { UnstrcturedNormilizer, MeiliChunksIndexer, Crawl4aiCrawler } from './adapters';
+import { MeiliChunksIndexer, Crawl4aiCrawler, LlamaNormilizer } from './adapters';
 
 export const getSourceApp = (): SourceApp => {
-	const normalizer = new UnstrcturedNormilizer();
+	const normalizer = new LlamaNormilizer();
 	const chunksIndexer = new MeiliChunksIndexer();
 	const crawler = new Crawl4aiCrawler();
 

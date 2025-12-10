@@ -54,10 +54,12 @@
 		"@langfuse/openai": "^4.4.2",
 		"@langfuse/otel": "^4.4.2",
 		"@langfuse/tracing": "^4.4.2",
+		"@llamaindex/readers": "^3.1.21",
 		"@mendable/firecrawl-js": "^4.6.2",
 		"@openrouter/sdk": "^0.2.9",
 		"@opentelemetry/sdk-node": "^0.208.0",
 		"dompurify": "^3.3.0",
+		"llamaindex": "^0.12.1",
 		"lucide-svelte": "^0.553.0",
 		"luxon": "^3.7.2",
 		"marked": "^17.0.0",
@@ -68,8 +70,7 @@
 		"posthog-js": "^1.297.2",
 		"stripe": "^20.0.0",
 		"tiktoken": "^1.0.22",
-		"voyageai": "^0.0.8",
 		"zod": "^4.1.12"
 	},
-	"packageManager": "pnpm@10.24.0+sha512.01ff8ae71b4419903b65c60fb2dc9d34cf8bb6e06d03bde112ef38f7a34d6904c424ba66bea5cdcf12890230bf39f9580473140ed9c946fef328b6e5238a345a"
+	"packageManager": "pnpm@10.25.0+sha512.5e82639027af37cf832061bcc6d639c219634488e0f2baebe785028a793de7b525ffcd3f7ff574f5e9860654e098fe852ba8ac5dd5cefe1767d23a020a92f501"
 }

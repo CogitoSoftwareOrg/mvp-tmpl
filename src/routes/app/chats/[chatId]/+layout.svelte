@@ -3,7 +3,8 @@
 	import { page } from '$app/state';
 
 	import { messagesStore, ChatControlPanel } from '$lib/apps/chat/client';
-	import { uiStore, Sidebar, swipeable } from '$lib/shared/ui';
+	import { uiStore, Sidebar, swipeable, Button } from '$lib/shared/ui';
+	import { X } from 'lucide-svelte';
 
 	const { children } = $props();
 

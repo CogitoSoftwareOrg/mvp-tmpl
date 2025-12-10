@@ -211,10 +211,10 @@
 	>
 		<!-- Mobile Header -->
 		<header
-			class="flex h-10 shrink-0 items-center justify-between border-b border-base-300 px-2 md:hidden"
+			class="flex h-12 shrink-0 items-center justify-between border-b border-base-300 px-2 md:hidden"
 		>
 			<Button
-				color="neutral"
+				color="primary"
 				circle
 				size="sm"
 				onclick={() => uiStore.setSidebarOpen(true)}
@@ -231,7 +231,7 @@
 
 			{#if isChatPage}
 				<Button
-					color="neutral"
+					color="primary"
 					circle
 					size="sm"
 					onclick={() => uiStore.toggleRightSidebar()}

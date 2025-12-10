@@ -6,6 +6,7 @@ export type AddSourceCmd = {
 	file?: File;
 	title?: string;
 	url?: string;
+	query?: string;
 	metadata?: Record<string, unknown>;
 };
 

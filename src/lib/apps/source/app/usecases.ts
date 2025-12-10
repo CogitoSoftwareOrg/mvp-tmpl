@@ -13,11 +13,13 @@ import type {
 	RemoveSourceCmd,
 	SearchChunksCmd,
 	ChunksIndexer,
-	Crawler
+	Crawler,
+	Searcher
 } from '../core';
 
 export class SourceAppImpl implements SourceApp {
 	constructor(
+		private readonly searcher: Searcher,
 		private readonly normalizer: Normalizer,
 		private readonly chunksIndexer: ChunksIndexer,
 		private readonly crawler: Crawler
@@ -25,12 +27,20 @@ export class SourceAppImpl implements SourceApp {
 
 	async addSource(cmd: AddSourceCmd) {
 		let file = cmd.file;
-
 		if (cmd.mode === 'url') {
-			if (!cmd.url) throw new Error('URL is required');
-			const results = await this.crawler.crawl([cmd.url]);
-			const md = results[0].markdown;
-			file = new File([md], 'source.md', { type: 'text/markdown' });
+			if (!cmd.url && !cmd.query) throw new Error('URL or query is required');
+
+			if (cmd.url) {
+				const results = await this.crawler.crawl([cmd.url]);
+				const md = results[0].markdown;
+				file = new File([md], 'source.md', { type: 'text/markdown' });
+			} else if (cmd.query) {
+				const results = await this.searcher.search(cmd.query);
+				const urls = results.map((result) => result.url);
+				const crawlResults = await this.crawler.crawl(urls);
+				const md = crawlResults[0].markdown;
+				file = new File([md], 'source.md', { type: 'text/markdown' });
+			}
 		}
 
 		const source = await pb.collection(Collections.Sources).create({

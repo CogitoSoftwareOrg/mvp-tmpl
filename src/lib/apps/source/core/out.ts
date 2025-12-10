@@ -25,3 +25,11 @@ export type CrawlResult = {
 export interface Crawler {
 	crawl(urls: string[]): Promise<CrawlResult[]>;
 }
+
+export type SearchResult = {
+	url: string;
+	metadata: Record<string, unknown>;
+};
+export interface Searcher {
+	search(query: string, limit?: number, offset?: number): Promise<SearchResult[]>;
+}

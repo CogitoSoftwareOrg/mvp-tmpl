@@ -8,7 +8,7 @@ import {
 	ChatsStatusOptions,
 	type Update
 } from '$lib/shared';
-import { countTokens, type Agent } from '$lib/shared/server';
+import { countTokens, type Agent, type OpenAIMessage } from '$lib/shared/server';
 import { getActiveTraceId } from '@langfuse/tracing';
 
 import {
@@ -18,7 +18,6 @@ import {
 	type ChatEventMemoryPutCmd,
 	type ChatEventMemory,
 	type ChatEventMemoryGetCmd,
-	type OpenAIMessage,
 	type UtilsMode
 } from '../core';
 

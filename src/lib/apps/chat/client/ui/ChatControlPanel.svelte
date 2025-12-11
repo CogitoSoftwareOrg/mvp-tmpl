@@ -20,7 +20,7 @@
 			<p class="text-sm text-base-content/70">Chat settings and widgets</p>
 		</div>
 
-		<Button circle variant="ghost" onclick={() => uiStore.setRightSidebarOpen(false)}>
+		<Button class="sm:hidden" circle variant="ghost" onclick={() => uiStore.setRightSidebarOpen(false)}>
 			<X size={20} />
 		</Button>
 	</header>

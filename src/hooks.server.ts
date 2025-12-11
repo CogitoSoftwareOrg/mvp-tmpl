@@ -7,7 +7,7 @@ import { env } from '$env/dynamic/private';
 
 import { Collections, pb } from '$lib';
 import { startWorker } from '$lib/apps/job/worker';
-import { getDI } from '$lib/shared/server';
+import { getDI } from '$lib/shared/server/di';
 
 const handleLogger: Handle = async ({ event, resolve }) => {
 	console.log(event.request.method, event.url.pathname);

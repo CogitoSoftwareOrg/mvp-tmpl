@@ -1,7 +1,8 @@
 import type { Importance, Principal } from '$lib/apps/user/core';
 import type { Collections, MessagesResponse, Update } from '$lib/shared';
+import type { OpenAIMessage } from '$lib/shared/server';
 
-import type { Chat, ChatEventMemory, EventType, OpenAIMessage } from './models';
+import type { Chat, ChatEventMemory, EventType } from './models';
 
 export interface SendUserMessageCmd {
 	principal: Principal;

@@ -1,7 +1,7 @@
 import { env } from '$env/dynamic/private';
 
 import { Collections, pb, type JobExpand, type JobsResponse } from '$lib';
-import { getDI } from '$lib/shared/server';
+import { getDI } from '$lib/shared/server/di';
 
 const JOB_RUN_INTERVAL = 30 * 1000;
 

@@ -1,8 +1,8 @@
 import z from 'zod';
 
 import type { MessagesResponse } from '$lib/shared';
-import type { Agent, Tool } from '$lib/shared/server';
-import type { ChatApp, OpenAIMessage } from '$lib/apps/chat/core';
+import type { Agent, Tool, OpenAIMessage } from '$lib/shared/server';
+import type { ChatApp } from '$lib/apps/chat/core';
 import type { UserApp } from '$lib/apps/user/core';
 import type { SourceApp } from '$lib/apps/source/core';
 

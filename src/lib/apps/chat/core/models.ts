@@ -35,21 +35,6 @@ export type ChatEventMemory = {
 	importance: Importance;
 };
 
-export type OpenAIMessage = {
-	role: 'user' | 'assistant' | 'system' | 'tool';
-	content: string;
-	tool_calls?: {
-		id: string;
-		type: 'function';
-		function: {
-			name: string;
-			arguments: string;
-		};
-	}[];
-	tool_call_id?: string;
-	tool_call_name?: string;
-	tool_call_args?: Record<string, unknown>;
-};
 export class Chat {
 	constructor(public readonly data: ChatsResponse<ChatExpand>) {}
 

@@ -1,15 +1,19 @@
+import { PostHog } from 'posthog-node';
 import { encoding_for_model } from 'tiktoken';
-import OpenAI from 'openai';
+import { OpenAI } from '@posthog/ai';
 import { observeOpenAI } from '@langfuse/openai';
 import { zodFunction } from 'openai/helpers/zod.js';
 import { env } from '$env/dynamic/private';
+import { env as publicEnv } from '$env/dynamic/public';
 
-import type { OpenAIMessage } from '$lib/apps/chat/core';
-
+export const ph = new PostHog(publicEnv.PUBLIC_POSTHOG_TOKEN, {
+	host: publicEnv.PUBLIC_POSTHOG_URL
+});
 export const llm = observeOpenAI(
 	new OpenAI({
 		baseURL: env.LITELLM_URL,
-		apiKey: env.LITELLM_API_KEY
+		apiKey: env.LITELLM_API_KEY,
+		posthog: ph
 	})
 );
 
@@ -75,3 +79,19 @@ export interface Agent {
 	run(cmd: AgentRunCmd): Promise<string>;
 	runStream(cmd: AgentRunCmd): Promise<ReadableStream>;
 }
+
+export type OpenAIMessage = {
+	role: 'user' | 'assistant' | 'system' | 'tool';
+	content: string;
+	tool_calls?: {
+		id: string;
+		type: 'function';
+		function: {
+			name: string;
+			arguments: string;
+		};
+	}[];
+	tool_call_id?: string;
+	tool_call_name?: string;
+	tool_call_args?: Record<string, unknown>;
+};

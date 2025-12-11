@@ -4,10 +4,10 @@ import { OpenAI } from '@posthog/ai';
 import { observeOpenAI } from '@langfuse/openai';
 import { zodFunction } from 'openai/helpers/zod.js';
 import { env } from '$env/dynamic/private';
-import { env as publicEnv } from '$env/dynamic/public';
+import { PUBLIC_POSTHOG_TOKEN, PUBLIC_POSTHOG_URL } from '$env/static/public';
 
-export const ph = new PostHog(publicEnv.PUBLIC_POSTHOG_TOKEN, {
-	host: publicEnv.PUBLIC_POSTHOG_URL
+export const ph = new PostHog(PUBLIC_POSTHOG_TOKEN, {
+	host: PUBLIC_POSTHOG_URL
 });
 export const llm = observeOpenAI(
 	new OpenAI({

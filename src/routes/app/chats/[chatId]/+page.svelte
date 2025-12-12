@@ -32,29 +32,42 @@
 
 	const mobile = new MediaQuery('(max-width: 768px)');
 
-	// Handle viewport changes on mobile to prevent layout shift
+	// Handle viewport changes on mobile to prevent layout shift when keyboard opens
 	onMount(() => {
 		if (typeof window === 'undefined' || !window.visualViewport) return;
 
-		const updateHeight = () => {
+		const updateLayout = () => {
 			if (!containerElement || !window.visualViewport) return;
 
-			// On mobile, set container height to visual viewport height
-			// This makes the container shrink when keyboard opens
 			if (mobile.current) {
-				containerElement.style.height = `${window.visualViewport.height}px`;
+				const vv = window.visualViewport;
+				// Position container fixed within the visual viewport
+				// This ensures it stays visible when keyboard opens
+				containerElement.style.position = 'fixed';
+				containerElement.style.top = `${vv.offsetTop}px`;
+				containerElement.style.left = `${vv.offsetLeft}px`;
+				containerElement.style.width = `${vv.width}px`;
+				containerElement.style.height = `${vv.height}px`;
 			} else {
+				// Desktop - use normal flow
+				containerElement.style.position = '';
+				containerElement.style.top = '';
+				containerElement.style.left = '';
+				containerElement.style.width = '';
 				containerElement.style.height = '';
 			}
 		};
 
 		// Initial update
-		updateHeight();
+		updateLayout();
 
-		window.visualViewport.addEventListener('resize', updateHeight);
+		// Listen to both resize and scroll - iOS fires scroll when keyboard opens
+		window.visualViewport.addEventListener('resize', updateLayout);
+		window.visualViewport.addEventListener('scroll', updateLayout);
 
 		return () => {
-			window.visualViewport?.removeEventListener('resize', updateHeight);
+			window.visualViewport?.removeEventListener('resize', updateLayout);
+			window.visualViewport?.removeEventListener('scroll', updateLayout);
 		};
 	});
 

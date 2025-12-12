@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Send, Paperclip } from 'lucide-svelte';
 	import type { ClassValue } from 'svelte/elements';
+	import { MediaQuery } from 'svelte/reactivity';
 
 	import { Button } from '$lib/shared/ui';
 	import { SourcesStatusOptions, type MessagesResponse } from '$lib';
@@ -156,8 +157,11 @@
 		}
 	}
 
+	const mobile = $derived(new MediaQuery('(max-width: 768px)'));
+
 	function handleKeydown(e: KeyboardEvent) {
-		if (e.key === 'Enter' && !e.shiftKey) {
+		// On mobile, Enter creates new line; on desktop, Enter sends (Shift+Enter for new line)
+		if (e.key === 'Enter' && !e.shiftKey && !mobile) {
 			e.preventDefault();
 			handleSend();
 		}

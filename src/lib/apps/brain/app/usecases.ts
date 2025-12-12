@@ -8,6 +8,7 @@ import type { SourceApp } from '$lib/apps/source/core';
 
 import type { BrainApp, BrainRunCmd, Mode } from '../core';
 import { SaveMemoriesToolSchema, SaveMemoriesArgs } from '../core/tools';
+import { getActiveTraceId } from '@langfuse/tracing';
 
 const HISTORY_TOKENS = 2000;
 const USER_MEMORY_TOKENS = 5000;
@@ -56,11 +57,15 @@ export class BrainAppImpl implements BrainApp {
 
 	async ask(cmd: BrainRunCmd): Promise<string> {
 		const { chatId, userId, query } = cmd;
+		const traceId = getActiveTraceId();
 		const { history, aiMsg, knowledge } = await this.prepare(chatId, userId, query);
 		const agent = this.agents['simple'];
 		const result = await agent.run({
 			history,
-			dynamicArgs: {},
+			dynamicArgs: {
+				userId,
+				traceId
+			},
 			tools: this.tools,
 			knowledge
 		});
@@ -70,6 +75,7 @@ export class BrainAppImpl implements BrainApp {
 
 	async askStream(cmd: BrainRunCmd): Promise<ReadableStream> {
 		const { chatId, userId, query } = cmd;
+		const traceId = getActiveTraceId();
 		const { history, aiMsg, knowledge } = await this.prepare(chatId, userId, query);
 
 		const agent = this.agents['simple'];
@@ -85,7 +91,8 @@ export class BrainAppImpl implements BrainApp {
 						history: history,
 						knowledge,
 						dynamicArgs: {
-							userId: cmd.userId,
+							userId,
+							traceId,
 							chatId: cmd.chatId
 						}
 					});
@@ -117,7 +124,7 @@ export class BrainAppImpl implements BrainApp {
 		userMsg: MessagesResponse;
 		knowledge: string;
 	}> {
-		const { aiMsg, userMsg } = await this.chatApp.prepareMessages(chatId, query);
+		const { aiMsg, userMsg } = await this.chatApp.prepareMessages(chatId, query, userId);
 
 		const knowledge = await this.buildKnowledge(userId, chatId, query);
 

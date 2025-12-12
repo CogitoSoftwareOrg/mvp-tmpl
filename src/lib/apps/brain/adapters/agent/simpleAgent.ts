@@ -80,7 +80,9 @@ export class SimpleAgent implements Agent {
 			const res = await llm.chat.completions.create({
 				model: AGENT_MODEL,
 				messages,
-				stream: false
+				stream: false,
+				posthogDistinctId: dynamicArgs.userId as string,
+				posthogTraceId: dynamicArgs.traceId as string
 			});
 
 			const content = res.choices[0].message.content || '';
@@ -113,7 +115,9 @@ export class SimpleAgent implements Agent {
 				model: AGENT_MODEL,
 				messages,
 				stream: true,
-				stream_options: { include_usage: true }
+				stream_options: { include_usage: true },
+				posthogDistinctId: dynamicArgs.userId as string,
+				posthogTraceId: dynamicArgs.traceId as string
 			});
 			return new ReadableStream({
 				async start(controller) {

@@ -26,7 +26,8 @@ export interface ChatApp {
 	update(chatId: string, dto: Update<Collections.Chats>): Promise<Chat>;
 	prepareMessages(
 		chatId: string,
-		query: string
+		query: string,
+		userId?: string
 	): Promise<{ aiMsg: MessagesResponse; userMsg: MessagesResponse }>;
 	getHistory(chatId: string, tokens: number): Promise<OpenAIMessage[]>;
 

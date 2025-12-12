@@ -30,14 +30,16 @@ export class NamerAgent implements Agent {
 
 	run = observe(
 		async (cmd: AgentRunCmd): Promise<string> => {
-			const { history, knowledge } = cmd;
+			const { history, knowledge, dynamicArgs } = cmd;
 			const messages = this.buildMessages(history as ChatCompletionMessageParam[], knowledge);
 
 			// Final response (no tools)
 			const res = await llm.chat.completions.create({
 				model: AGENT_MODEL,
 				messages,
-				stream: false
+				stream: false,
+				posthogDistinctId: dynamicArgs.userId as string,
+				posthogTraceId: dynamicArgs.traceId as string
 			});
 
 			const content = res.choices[0].message.content || '';
@@ -53,7 +55,7 @@ export class NamerAgent implements Agent {
 
 	runStream = observe(
 		async (cmd: AgentRunCmd): Promise<ReadableStream> => {
-			const { history, knowledge } = cmd;
+			const { history, knowledge, dynamicArgs } = cmd;
 			const messages = this.buildMessages(history as ChatCompletionMessageParam[], knowledge);
 
 			// Stream only the final response
@@ -61,7 +63,9 @@ export class NamerAgent implements Agent {
 				model: AGENT_MODEL,
 				messages,
 				stream: true,
-				stream_options: { include_usage: true }
+				stream_options: { include_usage: true },
+				posthogDistinctId: dynamicArgs.userId as string,
+				posthogTraceId: dynamicArgs.traceId as string
 			});
 
 			return new ReadableStream({

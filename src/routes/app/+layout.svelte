@@ -70,24 +70,23 @@
 	onMount(() => {
 		if (typeof window === 'undefined' || !window.visualViewport) return;
 
-		const updateLayout = () => {
-			if (!layoutContainer || !window.visualViewport) return;
+		const handleResize = () => {
+			// Only update layout if it's a chat page and the container is available
+			if (!layoutContainer || !window.visualViewport || !isChatPage) return;
 
 			if (mobile.current) {
-				// Set container height to visual viewport height
-				// This shrinks the entire layout when keyboard opens
 				layoutContainer.style.height = `${window.visualViewport.height}px`;
 			} else {
 				layoutContainer.style.height = '';
 			}
 		};
 
-		updateLayout();
+		handleResize();
 
-		window.visualViewport.addEventListener('resize', updateLayout);
+		window.visualViewport.addEventListener('resize', handleResize);
 
 		return () => {
-			window.visualViewport?.removeEventListener('resize', updateLayout);
+			window.visualViewport?.removeEventListener('resize', handleResize);
 		};
 	});
 

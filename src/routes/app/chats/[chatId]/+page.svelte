@@ -15,7 +15,14 @@
 
 	const chatId = $derived(page.params.chatId);
 	const chat = $derived(chatsStore.chats.find((chat) => chat.id === chatId));
+	
 	const messages = $derived(messagesStore.messages);
+	const hasMoreMessages = $derived(messagesStore.page < messagesStore.totalPages);
+	const messagesLoading = $derived(messagesStore.loading);
+
+	async function handleLoadMore() {
+		await messagesStore.loadNextPage();
+	}
 
 	const aiSender = {
 		id: 'ai',
@@ -94,7 +101,15 @@
 
 		<!-- Messages Area -->
 		<div class="flex-1 overflow-hidden">
-			<Messages class="h-full" {messages} userSender={userStore.sender} {aiSender} />
+			<Messages
+				class="h-full"
+				{messages}
+				userSender={userStore.sender}
+				{aiSender}
+				hasMore={hasMoreMessages}
+				loading={messagesLoading}
+				onLoadMore={handleLoadMore}
+			/>
 		</div>
 
 		<!-- Footer / Input -->

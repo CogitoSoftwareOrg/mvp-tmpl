@@ -14,7 +14,8 @@
 	$effect(() => {
 		if (!chatId) return;
 
-		messagesStore.load(chatId).then(() => {
+		messagesStore.load(chatId).then((res) => {
+			messagesStore.set(res.items, res.page, res.totalPages, res.totalItems);
 			messagesStore.subscribe(chatId);
 		});
 		return () => {

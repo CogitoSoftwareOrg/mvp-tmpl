@@ -161,7 +161,7 @@
 
 	function handleKeydown(e: KeyboardEvent) {
 		// On mobile, Enter creates new line; on desktop, Enter sends (Shift+Enter for new line)
-		if (e.key === 'Enter' && !e.shiftKey && !mobile) {
+		if (e.key === 'Enter' && !e.shiftKey && !mobile.current) {
 			e.preventDefault();
 			handleSend();
 		}

@@ -26,6 +26,25 @@
 	const sidebarExpanded = $derived(uiStore.sidebarExpanded);
 
 	const chats = $derived(chatsStore.chats);
+	const hasMoreChats = $derived(chatsStore.page < chatsStore.totalPages);
+	const chatsLoading = $derived(chatsStore.loading);
+
+	// Intersection observer for infinite scroll
+	let loaderRef: HTMLDivElement | undefined = $state();
+
+	$effect(() => {
+		if (!loaderRef || !hasMoreChats) return;
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (entries[0].isIntersecting && !chatsLoading) {
+					chatsStore.loadNextPage();
+				}
+			},
+			{ threshold: 0.1 }
+		);
+		observer.observe(loaderRef);
+		return () => observer.disconnect();
+	});
 
 	// Chat page context detection
 	const isChatPage = $derived(page.url.pathname.startsWith('/app/chats/'));
@@ -33,11 +52,20 @@
 	const currentChat = $derived(chats.find((c) => c.id === currentChatId));
 
 	$effect(() => {
-		globalPromise.then(({ user, sub, chats, sources }) => {
+		globalPromise.then(({ user, sub, chatsRes, sourcesRes }) => {
 			if (user) userStore.user = user;
 			if (sub) subStore.sub = sub;
-			if (chats) chatsStore.set(chats);
-			if (sources) sourcesStore.set(sources);
+			if (chatsRes) {
+				chatsStore.set(chatsRes.items, chatsRes.page, chatsRes.totalPages, chatsRes.totalItems);
+			}
+			if (sourcesRes) {
+				sourcesStore.set(
+					sourcesRes.items,
+					sourcesRes.page,
+					sourcesRes.totalPages,
+					sourcesRes.totalItems
+				);
+			}
 		});
 	});
 
@@ -155,6 +183,13 @@
 				</li>
 			{/each}
 		</ul>
+
+		<!-- Infinite scroll loader -->
+		{#if hasMoreChats}
+			<div bind:this={loaderRef} class="flex justify-center py-4">
+				<span class="loading loading-spinner loading-sm"></span>
+			</div>
+		{/if}
 	</div>
 {/snippet}
 

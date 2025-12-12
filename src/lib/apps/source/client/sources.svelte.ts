@@ -1,13 +1,50 @@
 import { Collections, pb, SourcesStatusOptions, type Create, type SourcesResponse } from '$lib';
 
-class SourcesStore {
-	_sources: SourcesResponse[] = $state([]);
+const PAGE_SIZE = 50;
 
-	set(sources: SourcesResponse[]) {
-		this._sources = sources;
-	}
+class SourcesStore {
+	page = $state(1);
+	totalPages = $state(0);
+	totalItems = $state(0);
+	loading = $state(true);
+
+	private _sources: SourcesResponse[] = $state([]);
+	private userId: string | null = null;
 
 	sources = $derived(this._sources);
+
+	set(sources: SourcesResponse[], page: number, totalPages: number, totalItems: number) {
+		this.loading = false;
+
+		this._sources = sources;
+		this.page = page;
+		this.totalPages = totalPages;
+		this.totalItems = totalItems;
+	}
+
+	async load(userId: string) {
+		const res = await pb.collection(Collections.Sources).getList(1, PAGE_SIZE, {
+			filter: `user = "${userId}"`,
+			sort: '-created'
+		});
+		this.userId = userId;
+		return res;
+	}
+
+	async loadNextPage() {
+		if (this.page >= this.totalPages) return;
+
+		this.loading = true;
+		const res = await pb.collection(Collections.Sources).getList(this.page + 1, PAGE_SIZE, {
+			filter: `user = "${this.userId}"`,
+			sort: '-created'
+		});
+		this._sources = [...this._sources, ...res.items];
+		this.page = res.page;
+		this.totalPages = res.totalPages;
+		this.totalItems = res.totalItems;
+		this.loading = false;
+	}
 
 	addOptimistic(dto: Create<Collections.Sources>) {
 		const source = {

@@ -4,6 +4,7 @@
 	import { Plus, Settings, Heart, MessageSquare, Menu, PanelRight } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import { MediaQuery } from 'svelte/reactivity';
+	import posthog from 'posthog-js';
 
 	import { chatApi, chatsStore } from '$lib/apps/chat/client';
 	import { uiStore, swipeable } from '$lib/shared/ui';
@@ -51,6 +52,19 @@
 	const isChatPage = $derived(page.url.pathname.startsWith('/app/chats/'));
 	const currentChatId = $derived(page.params.chatId);
 	const currentChat = $derived(chats.find((c) => c.id === currentChatId));
+
+	// Posthog identify and set person
+	$effect(() => {
+		console.log(user);
+		console.log(sub);
+
+		if (!user || !sub) return;
+		posthog.identify(user.id);
+		posthog.people.set({
+			...user,
+			plan: sub.tariff
+		});
+	});
 
 	$effect(() => {
 		globalPromise.then(({ user, sub, chatsRes, sourcesRes }) => {

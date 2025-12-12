@@ -28,83 +28,33 @@
 
 	let isEditingTitle = $state(false);
 	let newTitle = $derived(chat?.title || '');
-	let messagesContainer: HTMLDivElement | undefined = $state();
-	let footerElement: HTMLElement | undefined = $state();
+	let containerElement: HTMLDivElement | undefined = $state();
 
-	const mobile = $derived(new MediaQuery('(max-width: 768px)'));
+	const mobile = new MediaQuery('(max-width: 768px)');
 
 	// Handle viewport changes on mobile to prevent layout shift
 	onMount(() => {
-		if (!mobile || typeof window === 'undefined' || !window.visualViewport) return;
+		if (typeof window === 'undefined' || !window.visualViewport) return;
 
-		let initialMessagesHeight: number | null = null;
-		let footerHeight: number | null = null;
+		const updateHeight = () => {
+			if (!containerElement || !window.visualViewport) return;
 
-		// Store initial heights when elements are mounted
-		const storeInitialHeights = () => {
-			if (messagesContainer && footerElement) {
-				initialMessagesHeight = messagesContainer.offsetHeight;
-				footerHeight = footerElement.offsetHeight;
-			}
-		};
-
-		// Use a small delay to ensure elements are rendered
-		setTimeout(storeInitialHeights, 100);
-
-		const updateLayout = () => {
-			if (!messagesContainer || !footerElement || !window.visualViewport) return;
-
-			const viewport = window.visualViewport;
-			const viewportHeight = viewport.height;
-			const windowHeight = window.innerHeight;
-
-			// Calculate keyboard height
-			const keyboardHeight = windowHeight - viewportHeight;
-
-			if (keyboardHeight > 50) {
-				// Keyboard is open - fix footer position above keyboard
-				footerElement.style.position = 'fixed';
-				footerElement.style.bottom = '0';
-				footerElement.style.left = '0';
-				footerElement.style.right = '0';
-				footerElement.style.zIndex = '1000';
-				footerElement.style.width = '100%';
-				footerElement.style.backgroundColor = 'var(--fallback-b1, oklch(var(--b1)))';
-
-				// Keep messages container at its original height to prevent layout shift
-				if (initialMessagesHeight !== null) {
-					messagesContainer.style.height = `${initialMessagesHeight}px`;
-					messagesContainer.style.overflow = 'auto';
-				}
+			// On mobile, set container height to visual viewport height
+			// This makes the container shrink when keyboard opens
+			if (mobile.current) {
+				containerElement.style.height = `${window.visualViewport.height}px`;
 			} else {
-				// Keyboard is closed - restore normal layout
-				footerElement.style.position = '';
-				footerElement.style.bottom = '';
-				footerElement.style.left = '';
-				footerElement.style.right = '';
-				footerElement.style.zIndex = '';
-				footerElement.style.width = '';
-				footerElement.style.backgroundColor = '';
-
-				// Restore messages container to flex behavior
-				messagesContainer.style.height = '';
-				messagesContainer.style.overflow = '';
-
-				// Update initial height for next time
-				initialMessagesHeight = messagesContainer.offsetHeight;
+				containerElement.style.height = '';
 			}
 		};
 
-		window.visualViewport.addEventListener('resize', updateLayout);
-		window.visualViewport.addEventListener('scroll', updateLayout);
+		// Initial update
+		updateHeight();
 
-		// Also listen to window resize as fallback
-		window.addEventListener('resize', storeInitialHeights);
+		window.visualViewport.addEventListener('resize', updateHeight);
 
 		return () => {
-			window.visualViewport?.removeEventListener('resize', updateLayout);
-			window.visualViewport?.removeEventListener('scroll', updateLayout);
-			window.removeEventListener('resize', storeInitialHeights);
+			window.visualViewport?.removeEventListener('resize', updateHeight);
 		};
 	});
 
@@ -133,7 +83,7 @@
 </script>
 
 {#if chat && messages}
-	<div class="flex h-full w-full flex-col">
+	<div bind:this={containerElement} class="flex h-full w-full flex-col">
 		<!-- Desktop Header with title editing -->
 		<header
 			class="hidden h-12 shrink-0 items-center justify-between border-b border-base-300 px-4 sm:flex"
@@ -174,16 +124,13 @@
 		</header>
 
 		<!-- Messages Area -->
-		<div bind:this={messagesContainer} class="flex-1 overflow-hidden">
+		<div class="flex-1 overflow-hidden">
 			<Messages class="h-full" {messages} userSender={userStore.sender} {aiSender} />
 		</div>
 
 		<!-- Footer / Input -->
 		{#if chatId}
-			<footer
-				bind:this={footerElement}
-				class="shrink-0 border-t border-base-300 bg-base-100 p-2 pt-[0.4rem]"
-			>
+			<footer class="shrink-0 border-t border-base-300 bg-base-100 p-2 pt-[0.4rem]">
 				<MessageControls {chatId} {messages} onSend={handleSend} />
 			</footer>
 		{/if}

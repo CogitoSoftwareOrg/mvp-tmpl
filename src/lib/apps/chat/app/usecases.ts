@@ -41,13 +41,13 @@ export class ChatAppImpl implements ChatApp {
 		}));
 		await this.chatEventIndexer.add(memories);
 	}
-	async prepareMessages(chatId: string, query: string, userId?: string) {
+	async prepareMessages(chatId: string, query: string) {
 		const traceId = getActiveTraceId();
 
 		const chat = await this.getChat(chatId);
 
 		if (chat.data.status === ChatsStatusOptions.empty) {
-			this.nameChat(chatId, query, userId, traceId);
+			this.nameChat(chatId, query, chat.data.user);
 
 			await pb.collection(Collections.Chats).update(chatId, {
 				status: ChatsStatusOptions.going
@@ -123,12 +123,8 @@ export class ChatAppImpl implements ChatApp {
 		return messages;
 	}
 
-	private async nameChat(
-		chatId: string,
-		query: string,
-		userId?: string,
-		traceId?: string
-	): Promise<void> {
+	private async nameChat(chatId: string, query: string, userId: string): Promise<void> {
+		const traceId = getActiveTraceId();
 		const name = await this.agents['name'].run({
 			history: [{ role: 'user', content: query }],
 			knowledge: '',

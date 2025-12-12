@@ -124,7 +124,7 @@ export class BrainAppImpl implements BrainApp {
 		userMsg: MessagesResponse;
 		knowledge: string;
 	}> {
-		const { aiMsg, userMsg } = await this.chatApp.prepareMessages(chatId, query, userId);
+		const { aiMsg, userMsg } = await this.chatApp.prepareMessages(chatId, query);
 
 		const knowledge = await this.buildKnowledge(userId, chatId, query);
 

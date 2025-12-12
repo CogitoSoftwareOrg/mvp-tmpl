@@ -13,6 +13,7 @@
 	import { ChatsStatusOptions } from '$lib';
 
 	import Splash from './Splash.svelte';
+	import UpdateApp from './UpdateApp.svelte';
 
 	const mobile = new MediaQuery('(max-width: 768px)');
 	let layoutContainer: HTMLDivElement | undefined = $state();
@@ -359,3 +360,5 @@
 >
 	<FeedbackForm />
 </Modal>
+
+<UpdateApp />

@@ -1,7 +1,7 @@
 import { Collections, MessagesStatusOptions, pb, type Create, type MessagesResponse } from '$lib';
 import type { MessageChunk } from '$lib/apps/chat/core';
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 50;
 class MessagesStore {
 	loading = $state(true);
 	page = $state(1);

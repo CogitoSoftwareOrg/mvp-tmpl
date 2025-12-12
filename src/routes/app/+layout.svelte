@@ -2,6 +2,8 @@
 	import { afterNavigate, goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { Plus, Settings, Heart, MessageSquare, Menu, PanelRight } from 'lucide-svelte';
+	import { onMount } from 'svelte';
+	import { MediaQuery } from 'svelte/reactivity';
 
 	import { chatApi, chatsStore } from '$lib/apps/chat/client';
 	import { uiStore, swipeable } from '$lib/shared/ui';
@@ -11,6 +13,9 @@
 	import { ChatsStatusOptions } from '$lib';
 
 	import Splash from './Splash.svelte';
+
+	const mobile = new MediaQuery('(max-width: 768px)');
+	let layoutContainer: HTMLDivElement | undefined = $state();
 
 	const { children, data } = $props();
 	const globalPromise = $derived(data.globalPromise);
@@ -59,6 +64,31 @@
 	// Close mobile sidebar on navigation
 	afterNavigate(() => {
 		uiStore.setSidebarOpen(false);
+	});
+
+	// Handle viewport changes on mobile to prevent layout shift when keyboard opens
+	onMount(() => {
+		if (typeof window === 'undefined' || !window.visualViewport) return;
+
+		const updateLayout = () => {
+			if (!layoutContainer || !window.visualViewport) return;
+
+			if (mobile.current) {
+				// Set container height to visual viewport height
+				// This shrinks the entire layout when keyboard opens
+				layoutContainer.style.height = `${window.visualViewport.height}px`;
+			} else {
+				layoutContainer.style.height = '';
+			}
+		};
+
+		updateLayout();
+
+		window.visualViewport.addEventListener('resize', updateLayout);
+
+		return () => {
+			window.visualViewport?.removeEventListener('resize', updateLayout);
+		};
 	});
 
 	function isActive(path: string) {
@@ -201,6 +231,7 @@
 	<Splash />
 {:then}
 	<div
+		bind:this={layoutContainer}
 		class="flex h-screen flex-col overflow-hidden bg-base-100 md:flex-row"
 		use:swipeable={{
 			isOpen: sidebarOpen ?? false,

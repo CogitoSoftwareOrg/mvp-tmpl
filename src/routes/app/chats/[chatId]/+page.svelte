@@ -1,9 +1,7 @@
 <script lang="ts">
-	import { MediaQuery } from 'svelte/reactivity';
 	import { page } from '$app/state';
 	import { MessagesRoleOptions, MessagesStatusOptions } from '$lib';
 	import { Pencil, Check, X } from 'lucide-svelte';
-	import { onMount } from 'svelte';
 
 	import {
 		chatsStore,
@@ -28,48 +26,6 @@
 
 	let isEditingTitle = $state(false);
 	let newTitle = $derived(chat?.title || '');
-	let containerElement: HTMLDivElement | undefined = $state();
-
-	const mobile = new MediaQuery('(max-width: 768px)');
-
-	// Handle viewport changes on mobile to prevent layout shift when keyboard opens
-	onMount(() => {
-		if (typeof window === 'undefined' || !window.visualViewport) return;
-
-		const updateLayout = () => {
-			if (!containerElement || !window.visualViewport) return;
-
-			if (mobile.current) {
-				const vv = window.visualViewport;
-				// Position container fixed within the visual viewport
-				// This ensures it stays visible when keyboard opens
-				containerElement.style.position = 'fixed';
-				containerElement.style.top = `${vv.offsetTop}px`;
-				containerElement.style.left = `${vv.offsetLeft}px`;
-				containerElement.style.width = `${vv.width}px`;
-				containerElement.style.height = `${vv.height}px`;
-			} else {
-				// Desktop - use normal flow
-				containerElement.style.position = '';
-				containerElement.style.top = '';
-				containerElement.style.left = '';
-				containerElement.style.width = '';
-				containerElement.style.height = '';
-			}
-		};
-
-		// Initial update
-		updateLayout();
-
-		// Listen to both resize and scroll - iOS fires scroll when keyboard opens
-		window.visualViewport.addEventListener('resize', updateLayout);
-		window.visualViewport.addEventListener('scroll', updateLayout);
-
-		return () => {
-			window.visualViewport?.removeEventListener('resize', updateLayout);
-			window.visualViewport?.removeEventListener('scroll', updateLayout);
-		};
-	});
 
 	async function handleSend(content: string) {
 		if (!chat) return;
@@ -96,7 +52,7 @@
 </script>
 
 {#if chat && messages}
-	<div bind:this={containerElement} class="flex h-full w-full flex-col">
+	<div class="flex h-full w-full flex-col">
 		<!-- Desktop Header with title editing -->
 		<header
 			class="hidden h-12 shrink-0 items-center justify-between border-b border-base-300 px-4 sm:flex"

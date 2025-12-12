@@ -59,8 +59,7 @@
 		console.log(sub);
 
 		if (!user || !sub) return;
-		posthog.identify(user.id);
-		posthog.people.set({
+		posthog.identify(user.id, {
 			...user,
 			plan: sub.tariff
 		});

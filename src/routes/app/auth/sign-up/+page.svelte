@@ -2,6 +2,7 @@
 	import { goto, invalidate } from '$app/navigation';
 	import { pb } from '$lib';
 	import ThemeController from '$lib/shared/ui/ThemeController.svelte';
+	import posthog from 'posthog-js';
 	import Oauth from '../Oauth.svelte';
 	import { AlertCircle } from 'lucide-svelte';
 
@@ -39,6 +40,8 @@
 				passwordConfirm,
 				name: username
 			});
+
+			// posthog.capture('user_created', { user });
 
 			await pb!.collection('users').authWithPassword(email, password, {
 				expand: ''

@@ -64,6 +64,11 @@
 			name: user.name,
 			plan: sub.tariff
 		});
+		posthog.capture('user_authenticated', {
+			email: user.email,
+			name: user.name,
+			plan: sub.tariff
+		});
 	});
 
 	$effect(() => {

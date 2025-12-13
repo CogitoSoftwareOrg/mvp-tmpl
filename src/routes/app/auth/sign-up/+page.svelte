@@ -41,10 +41,12 @@
 				name: username
 			});
 
-			// posthog.capture('user_created', { user });
-
 			await pb!.collection('users').authWithPassword(email, password, {
 				expand: ''
+			});
+			posthog.capture('user_signed_up', {
+				email: email,
+				name: username
 			});
 
 			await goto('/app');

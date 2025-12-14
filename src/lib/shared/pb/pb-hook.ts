@@ -24,5 +24,8 @@ pb.authStore.onChange((token: string, record: AuthRecord) => {
 		subStore.sub = null;
 		chatsStore.clear();
 		messagesStore.clear();
+
+		localStorage.removeItem('guest_id');
+		localStorage.removeItem('guest_password');
 	}
 }, false);

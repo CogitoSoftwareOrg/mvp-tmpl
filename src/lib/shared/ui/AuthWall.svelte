@@ -6,7 +6,7 @@
 
 	function handleSignUp() {
 		uiStore.setAuthWallOpen(false);
-		goto('/app/auth/sign-up');
+		goto('/app/auth');
 	}
 </script>
 

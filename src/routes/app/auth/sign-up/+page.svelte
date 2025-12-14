@@ -5,6 +5,9 @@
 	import posthog from 'posthog-js';
 	import Oauth from '../Oauth.svelte';
 	import { AlertCircle } from 'lucide-svelte';
+	import { userStore } from '$lib/apps/user/client';
+
+	const user = $derived(userStore.user);
 
 	let username = $state('');
 	let email = $state('');
@@ -22,10 +25,23 @@
 			!agreed
 	);
 
+	let oldPassword = $state('');
+	$effect(() => {
+		if (user) {
+			oldPassword = localStorage.getItem('guest_password') ?? '';
+		}
+	});
+
 	const onSubmit = async (e: SubmitEvent) => {
 		e.preventDefault();
 		error = null;
 		loading = true;
+
+		if (!user || !oldPassword) {
+			error = { message: 'Invalid guest account' };
+			loading = false;
+			return;
+		}
 
 		if (password !== passwordConfirm) {
 			error = { message: 'Passwords do not match' };
@@ -34,16 +50,14 @@
 		}
 
 		try {
-			const user = await pb!.collection('users').create({
+			await pb!.collection('users').update(user.id, {
 				email,
+				oldPassword,
 				password,
 				passwordConfirm,
 				name: username
 			});
 
-			await pb!.collection('users').authWithPassword(email, password, {
-				expand: ''
-			});
 			posthog.capture('user_signed_up', {
 				email: email,
 				name: username
@@ -140,16 +154,6 @@
 			/>
 		</div>
 
-		<!-- Terms -->
-		<p class="mt-2 text-sm text-neutral">
-			By creating an account, you agree to the
-			<a href="/legal/terms-and-conditions" class="link link-primary" target="_blank"
-				>terms and conditions</a
-			>
-			and
-			<a href="/legal/privacy-policy" class="link link-primary" target="_blank">privacy policy</a>.
-		</p>
-
 		<!-- Submit Button -->
 		<div class="form-control mt-2 w-full">
 			<button type="submit" class="btn w-full btn-primary" disabled={disabled || loading}>
@@ -162,6 +166,15 @@
 			</button>
 		</div>
 	</form>
+	<!-- Terms -->
+	<p class="mt-2 text-sm text-neutral">
+		By creating an account, you agree to the
+		<a href="/legal/terms-and-conditions" class="link link-primary" target="_blank"
+			>terms and conditions</a
+		>
+		and
+		<a href="/legal/privacy-policy" class="link link-primary" target="_blank">privacy policy</a>.
+	</p>
 
 	<p class="mt-4 text-center text-sm">
 		Already have an account?

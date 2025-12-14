@@ -237,7 +237,7 @@
 	</div>
 
 	<div class="border-t border-base-300">
-		{#if user}
+		{#if user && user.email}
 			<a
 				href="/app/settings"
 				class={[
@@ -255,7 +255,7 @@
 				{/if}
 				{#if expanded}
 					<div class="flex-1 overflow-hidden">
-						<div class="truncate text-sm font-semibold">{user.name || 'User'}</div>
+						<div class="truncate text-sm font-semibold">{user.name || '<No Name>'}</div>
 						<div class="truncate text-xs opacity-60">{user.email}</div>
 					</div>
 					<Settings class="size-5 opacity-60" />
@@ -263,7 +263,7 @@
 			</a>
 		{:else}
 			<a
-				href="/app/auth/sign-up"
+				href="/app/auth"
 				class={[
 					'flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-base-300',
 					!expanded && 'justify-center'

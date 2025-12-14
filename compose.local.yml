@@ -12,12 +12,12 @@ services:
       - ./pb/pb_migrations:/pb/pb_migrations
       - ./pb/pb_hooks:/pb/pb_hooks
     ports:
-      - '8092:8090'
+      - '8090:8090'
 
   meili:
     image: getmeili/meilisearch:latest
     ports:
-      - '7702:7700'
+      - '7700:7700'
     volumes:
       - ./meili/data:/meili_data
     env_file:

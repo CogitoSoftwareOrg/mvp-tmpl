@@ -5,7 +5,9 @@
 
 	$effect(() => {
 		const user = userStore.user;
-		if (user) goto('/app', { replaceState: true });
+		if (user && user.email) {
+			goto('/app', { replaceState: true });
+		}
 	});
 
 	let { children } = $props();

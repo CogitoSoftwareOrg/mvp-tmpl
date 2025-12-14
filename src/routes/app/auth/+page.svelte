@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { goto, invalidate } from '$app/navigation';
-	import { pb } from '$lib';
 	import ThemeController from '$lib/shared/ui/ThemeController.svelte';
 	import { Heart, Shield, AlertCircle } from 'lucide-svelte';
 	import posthog from 'posthog-js';
+
+	import { pb } from '$lib';
 
 	interface Props {
 		error?: any | null;

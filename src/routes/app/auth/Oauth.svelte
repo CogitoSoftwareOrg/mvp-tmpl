@@ -42,6 +42,9 @@
 				}
 			});
 
+			localStorage.removeItem('guest_id');
+			localStorage.removeItem('guest_password');
+
 			await goto('/app');
 		} catch (e: any) {
 			console.error('Error during OAuth2 flow:', e);
